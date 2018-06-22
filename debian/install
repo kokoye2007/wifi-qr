@@ -1,0 +1,3 @@
+wifi-qr usr/bin
+wifi-qr.png usr/share/icons
+wifi-qr.desktop usr/share/applications
