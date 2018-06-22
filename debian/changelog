@@ -1,5 +1,5 @@
-wifi-qr (0.1) unstable; urgency=medium
+wifi-qr (0.1.0-1) unstable; urgency=medium
 
-  * Initial release. (Closes: #XXXXXX)
+  * Initial release
 
- -- kokoye2007 <kokoye2007@gmail.com>  Sat, 23 Jun 2018 00:46:12 +0630
+ -- kokoye2007 <kokoye2007@gmail.com>  Sat, 23 Jun 2018 03:59:36 +0630

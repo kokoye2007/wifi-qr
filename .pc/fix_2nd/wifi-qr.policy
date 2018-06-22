@@ -6,16 +6,17 @@
 
              <vendor>Wifi QR</vendor>
              <vendor_url>https://ubuntu-mm.net/</vendor_url>
-  <action id="org.freedesktop.policykit.pkexec.run-wifi-qr">
+
+             <action id="net.ubuntu-mm.pkexec.wifi-qr">
                <description>Wifi QR for Desktop Application</description>
                <message>Authentication is required to run the Wifi QR software</message>
                <icon_name>wifi-qr</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep</allow_active>
+      <allow_active>no</allow_active>
     </defaults>
                <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/wifi-qr</annotate>
-	        <annotate key="org.freedesktop.policykit.exec.allow_gui">TRUE</annotate>
-  </action>
+	        <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+             </action>
 </policyconfig>

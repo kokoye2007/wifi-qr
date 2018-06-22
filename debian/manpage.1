@@ -1,0 +1,32 @@
+\.TH "WIFI\-QR" "1" ""
+"Version 0.1.0" "Frivolous "WiFi QR" Documentation" .hy .SH NAME .PP
+wifi\-qr[em] qr to wifi, wifi to qr .SH SYNOPSIS .PP wifi\-qr.PD 0 .P
+\&.PD wifi\-qr.PD 0 .P .PD wifi\-qr.PD 0 .P .PD wifi\-qr.SH DESCRIPTION
+\&.PP WiFi and QR is idea from Xiaomi Phone, you can create and share
+wifi, hotspot with QR.
+also you can scan and auto connect with very easy.
+\&.PP now you can use wifi\-qr in your linux.
+you can share your linux wifi connect SSID and PASSWORD with QR.
+also you can scan android or else WiFi QR, its auto connect with your
+laptop.
+\&.IP "1." 3 Using the wifi\-qr from applications menu .IP "2." 3 Using
+the terminal from sudo wifi\-qr [s|q|t|g] .IP "3." 3 Finally, using
+"WiFi QR".
+\&.SS Options .TP .B g, G Create WIFI to QR Code with GUI .RS .PP Its
+local wifi connect configuration and password share.
+\&.RE .TP .B t, T Create WIFI to QR Code via Terminal .RS .PP Its local
+wifi connect configuration and password share.
+\&.RE .TP .B q, Q QR Code scan for Wifi Connect .RS .PP Its other
+hotspot or android via wifi connect configuration and password share to
+pc and laptop.
+\&.RE .TP .B s, S QR Code scan for Wifi Connect via Terminal .RS .PP Its
+other hotspot or android via wifi connect configuration and password
+share to pc and laptop.
+auto connect via CLI .RE .SH FILES .TP .B ~/.wifi\-qrrcPer\-user default
+dedication file.
+for future .RS .RE .TP .B /etc/wifi\-qr.confGlobal default dedication
+file.
+for future .RS .RE .SH BUGS .PP See GitHub Issues:
+<https://github.com/kokoye2007/wifi-qr/issues> .SH AUTHOR .PP kokoye2007
+<kokoye2007@gmail.com> .SH SEE ALSO .PP qrencode(1), zbarcam(1),
+zbarimg(1)
