@@ -2,8 +2,8 @@ Source: wifi-qr
 Section: utils
 Priority: optional
 Maintainer: kokoye2007 <kokoye2007@gmail.com>
-Build-Depends: debhelper (>= 10), 
-Standards-Version: 4.1.3
+Build-Depends: debhelper (>= 10)
+Standards-Version: 4.1.4
 Homepage: https://github.com/kokoye2007/wifi-qr
 Vcs-git: https://github.com/kokoye2007/wifi-qr.git
 Vcs-browser: https://github.com/kokoye2007/wifi-qr
@@ -11,7 +11,7 @@ Vcs-browser: https://github.com/kokoye2007/wifi-qr
 Package: wifi-qr
 Architecture: any
 Depends: ${misc:Depends}, zenity, qrencode, zbar-tools
-Description: WiFi Share with QR and Connect with QR 
+Description: WiFi Share with QR and Connect with QR
  PC to Android Network SSID Password share with QR code.
  Idea from Xiaomi Android WiFi Password share with QR
  Its just bash script and qrencode only.
