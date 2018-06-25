@@ -9,3 +9,14 @@ Icon=wifi-qr
 Keywords="QR; Wifi; Password; Share;"
 Terminal=false
 Categories=GNOME;Utility;
+Actions=ScanQR;CreateQR;
+
+[Desktop Action ScanQR]
+Name=Scan WiFi QR Code
+Exec=sh -c 'pkexec wifi-qr q'
+Terminal=false
+
+[Desktop Action CreateQR]
+Name=Create WiFi QR Code
+Exec=sh -c 'pkexec wifi-qr c'
+Terminal=false

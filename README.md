@@ -31,10 +31,9 @@ or using graphics menu
 - [x] QR Generate with GUI
 - [x] QR Generate with Terminal 
 - [x] QR Scan and Auto Connect
-- [ ] Special Characters is need to fix var
+- [x] It's Not Wifi QR
+- [x] This network is not available. 
 - [ ] QR Scan Auto Connect Hidden Network
-- [ ] It's Not Wifi QR
-- [ ] This network is not available. 
 - [ ] icons
 
 ###  Improve

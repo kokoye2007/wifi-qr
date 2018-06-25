@@ -5,12 +5,22 @@
 # Idea from Xaomi 
 # Ko Ko Ye <kokoye2007@gmail.com>
 # Ubuntu Myanmar LoCo Team
-#
+
 WIFIS=''
 SSID=''
 KEEY=''
 PSK=''
 HIDDEN=''
+QSSID=''
+QKEES=''
+QSSIDO=''
+
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+BLUE=$(tput setaf 4)
+RESET=$(tput sgr0)
+BOLD=$(tput bold)
+VERSION=0.1
 
 #Check root or sudo
 if [ "$(id -u)" != "0" ]; then
@@ -18,15 +28,7 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-#check software is install or not
-#software=qrencode
-#problem=$(dpkg -s $software | grep installed)
-#echo "Checking for $software : $problem" > /dev/null 2>&1
-#if [ "" == "$problem" ]; then
-#     echo "No $software. Setting up $software";
-#     sudo apt-get -y install $software;
-#fi
-
+#GUI Mainmenu
 main_menu(){
 
 CHOICE=$(zenity --list \
@@ -40,7 +42,7 @@ CHOICE=$(zenity --list \
 	FALSE "See license" \
 	FALSE "See version")
 
-#Menu g
+#Menu Select
 if [[ "$CHOICE" =~ "Local Wifi to QR Code" ]]; then
 	call_wifi_gui	
 fi
@@ -56,17 +58,17 @@ if [[ "$CHOICE" =~ "See license" ]]; then
 fi
 
 if [[ "$CHOICE" =~ "See version" ]]; then
-	zenity --info --icon-name=wifi-qr --title="Wifi QR Version" --no-wrap  --text=" This is wifi-qr version 0.1"
+	zenity --info --icon-name=wifi-qr --title="Wifi QR Version" --no-wrap  --text=" This is wifi-qr version $VERSION"
 	main_menu
 fi
 }
 
 #Working DIR
 WIFIDIR=/etc/NetworkManager/system-connections
-cd "$WIFIDIR"
 
 #GUI
 call_wifi_gui(){
+cd "$WIFIDIR"
 files=$(ls -Q)
 WIFIS=$(eval zenity --list --column="SSID" --width=300 --height=600  $files)
 if [ -z "$WIFIS" ]; then
@@ -82,6 +84,7 @@ fi
 
 #WIFI Command from terminal
 call_wifi_terminal(){
+cd "$WIFIDIR"
         OLD_IFS=$IFS
         IFS=$'\n'
                 for l in $(ls | sort); do
@@ -98,11 +101,15 @@ call_wifi_terminal(){
         IFS=$OLD_IFS
 
 echo ""
-echo "please choose wifi ssid"
+echo -e "${BLUE}===========================================${RESET}"
+echo -e "${BOLD}${WHITE}please choose wifi ssid{RESET}"
+echo -e "${BLUE}===========================================${RESET}"
 read -e wifissid 
 WIFIS=${array[$wifissid]}
-echo $WIFIS
-echo -e "\nyou choose SSID is: $WIFIS\n"
+echo -e "${BLUE}===========================================${RESET}"
+echo -e "${BOLD}${WHITE} $WIFIS" 
+echo -e "\nYou choose SSID is: $WIFIS\n ${RESET}"
+echo -e "${BLUE}===========================================${RESET}"
 call_wifi_pass
 qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"       
 echo
@@ -127,12 +134,14 @@ if [[ ! -z "$HIDN" ]]; then
 	else
 		H=""
 fi
+echo -e "${GREEN}"
 echo ""
 echo "SSID:    $WIFIS"
 echo "PASS:    $KEEY"
 echo "TYPE:    $PSSK"
 echo "HIDE:    $H"
 echo ""
+echo -e "${RESET}"
 }
 
 call_wifi_scan(){
@@ -160,28 +169,60 @@ qr_data="$cwd/wifi-qr-scan"
   wifiqrdata=$(cat $qr_data)
   rm -f $qr_data
 
-	###
-	# Add WIFI QR or ELSE check
-	###
+	#check WIFI QR or NOT
+	if echo $wifiqrdata | grep --quiet ^WIFI ; then
+		## Go Go GUI and CLI Mod
+        	QSSID=$(echo $wifiqrdata | awk -F';' '{print $3}' | cut -d":" -f2)
+        	QKEES=$(echo $wifiqrdata | awk -F';' '{print $2}' | cut -d":" -f2 | sed 's/^.\(.*\).$/\1/')
+        	QINFO=$(echo -e "SSID: $QSSID PASS: $QKEES")
+		echo "$wifidata"
+		if nmcli device wifi list | grep -w $QSSID ; then  
+			echo -e "${GREEN}==================${RESET}"
+			echo -e "${BOLD}${WHITE}$QSSID is Online{RESET}"
+			echo -e "${GREEN}==================${RESET}"
+			QSSIDO=ON
+			else 	
+			echo -e "${RED}==================${RESET}"
+			echo -e "${BOLD}${WHITE}cant see $QSSID{RESET}"
+			echo -e "${RED}==================${RESET}"
+			QSSIDO=OFF
+		fi
+
+	else
+			echo -e "${RED}==================${RESET}"
+			echo -e "${BOLD}${WHITE}Its not WIFI QR ${RESET}"
+			echo -e "${RED}==================${RESET}"
+			echo -e "${BOLD}${BLUE}$wifiqrdata ${RESET}"
+			echo -e "${BLUE}==================${RESET}"
+			QSSIDO=NOWIFI
+	fi
 
   # Append scan results to file
   #echo $wifiqrdata >> $ScanResult
-	
- ## Go Go GUI and CLI Mod
-	QSSID=$(echo $wifiqrdata | awk -F';' '{print $3}' | cut -d":" -f2)
-        QKEES=$(echo $wifiqrdata | awk -F';' '{print $2}' | cut -d":" -f2 | sed 's/^.\(.*\).$/\1/')
-        QINFO=$(echo -e "SSID: $QSSID\nPASS: $QKEES")
+		
 }
 
 call_wifi_scan_gui(){
  call_wifi_scan
   # Function with QR data
-	zenity --question --title="Connect to Wifi" --text="$QINFO" --width=200 --height=120  --icon-name=network-wireless #2>/dev/null
-	if [ $? = 0 ]; then
-		scan_connect
-	else
-    		exit
-	fi
+if [[ "$QSSIDO" =~ "ON" ]]; then
+	zenity --question --title="Connect to Wifi" --text="Connect to $QSSID" --width=200 --height=120  --icon-name=network-wireless 2>/dev/null
+		if [ $? = 0 ]; then
+			scan_connect
+		else
+    			exit
+		fi
+	elif
+	 [[ "$QSSIDO" =~ "OFF" ]] ; then
+		zenity --question --title="SSID can't find" --text="Can't find $QSSID, Its Online ? on off and retry to scan ?" --width=200 --height=120  --icon-name=network-wireless-offline 2>/dev/null
+		if [ $? = 0 ]; then
+			nmcli radio wifi off
+                        scan_connect
+                else
+                        exit
+                fi
+fi
+
 }
 
 scan_connect(){
@@ -219,10 +260,16 @@ case $1 in
                 echo "qr scan with gui";
 			call_wifi_scan_gui  
                 ;;
+        [Vv] )
+                echo "WiFi-QR Version is $VERSION";
+                ;;
         *) echo -e "\nInvalid input\n
-	Please use	t for Terminal
-			g for Gui
-			s for QR Scan and Connect Wifi
+	Please use	g for GUI Main Menu 
+			c for WiFi QR Create GUI
+			t for WiFi QR Create Terminal
+			s for QR Scan and Auto Connect Wifi
+			q for QR Scan and Connect Wifi GUI
+			v for WiFi-QR Version is $VERSION
 		"
             ;;
 esac
