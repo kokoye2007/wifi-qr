@@ -180,7 +180,7 @@ call_wifi_scan() {
     QINFO=$(echo -e "SSID: $QSSID PASS: $QKEES")
     #echo "$wifiqrdata"
     #echo $QINFO
-    if nmcli device wifi list | grep -w $QSSID; then
+    if nmcli device wifi list | grep -w "$QSSID"; then
       echo -e "${GREEN}==================${RESET}"
       echo -e "${BOLD}${WHITE}$QSSID is Online{RESET}"
       echo -e "${GREEN}==================${RESET}"
@@ -233,7 +233,7 @@ call_wifi_scan_gui() {
 scan_connect() {
   nmcli radio wifi on
   nmcli dev wifi rescan >/dev/null 2>&1
-  nmcli dev wifi connect $QSSID password $QKEES >/dev/null 2>&1
+  nmcli dev wifi connect "$QSSID" password "$QKEES" >/dev/null 2>&1
 }
 
 #RAW DATA SAMPLE
