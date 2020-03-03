@@ -172,10 +172,16 @@ qr_data="$cwd/wifi-qr-scan"
 	#check WIFI QR or NOT
 	if echo $wifiqrdata | grep --quiet ^WIFI ; then
 		## Go Go GUI and CLI Mod
-        	QSSID=$(echo $wifiqrdata | awk -F';' '{print $3}' | cut -d":" -f2)
-        	QKEES=$(echo $wifiqrdata | awk -F';' '{print $2}' | cut -d":" -f2 | sed 's/^.\(.*\).$/\1/')
-        	QINFO=$(echo -e "SSID: $QSSID PASS: $QKEES")
-		echo "$wifidata"
+		# ssid & key are not always in the same sequence - fix by using a dict and cut identifier for first key
+		declare -A wifiqrcred
+		wifiqrcred+=([$(echo $wifiqrdata | cut -b 6- | awk -F';' '{print $1}' | cut -d":" -f1)]=$(echo $wifiqrdata | cut -b 6- | awk -F';' '{print $1}' | cut -d":" -f2))
+		wifiqrcred+=([$(echo $wifiqrdata | awk -F';' '{print $2}' | cut -d":" -f1)]=$(echo $wifiqrdata | awk -F';' '{print $2}' | cut -d":" -f2))
+		wifiqrcred+=([$(echo $wifiqrdata | awk -F';' '{print $3}' | cut -d":" -f1)]=$(echo $wifiqrdata | awk -F';' '{print $3}' | cut -d":" -f2))
+		QSSID=${wifiqrcred[S]}
+		QKEES=${wifiqrcred[P]}
+		QINFO=$(echo -e "SSID: $QSSID PASS: $QKEES")
+		#echo "$wifiqrdata"
+		#echo $QINFO
 		if nmcli device wifi list | grep -w $QSSID ; then  
 			echo -e "${GREEN}==================${RESET}"
 			echo -e "${BOLD}${WHITE}$QSSID is Online{RESET}"
