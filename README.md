@@ -13,7 +13,7 @@ you can use command line via
 * ``sudo wifi-qr t`` for terminal only QR.
 * ``sudo wifi-qr g`` for PNG file QR export.
 or using graphics menu.
-* ``Local Wifi to QR Code``
+* ``Share saved WiFi``
 
 ## Scan and Connect with QR Code
 It's like Android QR Scanner,  scan and connect to network.
@@ -22,7 +22,7 @@ from terminal
 * ``sudo wifi-qr s`` for auto connect.
 * ``sudo wifi-qr q`` for show SSID, PASS and Connect.
 or using graphics menu
-* ``Wifi QR Code Scan and Connect``
+* ``Scan and connect``
 
 
 
