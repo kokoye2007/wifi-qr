@@ -75,7 +75,7 @@ call_wifi_gui() {
     exit
   else
     call_wifi_pass
-    QR_PNG=$(echo $WIFIS | tr -dc '[:alnum:]')
+    QR_PNG="wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]')"
     qrencode -l h -s 14 -o /tmp/$QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
     xdg-open /tmp/$QR_PNG && rm $_
   fi
