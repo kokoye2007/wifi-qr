@@ -32,32 +32,32 @@ fi
 main_menu() {
 
   CHOICE=$(zenity --list \
-    --title="Wifi and QR Code" \
-    --text="Please choose you meny:" \
+    --title="WiFi and QR Code" \
+    --text="Choose:" \
     --radiolist \
     --width=300 --height=220 \
-    --column="Check" --column="Menu" \
-    FALSE "Local Wifi to QR Code" \
-    FALSE "Wifi QR Code Scan and Connect" \
+    --column="Check" --column="Option" \
+    TRUE "Scan and connect" \
+    FALSE "Share saved WiFi" \
     FALSE "See license" \
     FALSE "See version")
 
   #Menu Select
-  if [[ "$CHOICE" =~ "Local Wifi to QR Code" ]]; then
+  if [[ "$CHOICE" =~ "Share saved WiFi" ]]; then
     call_wifi_gui
   fi
 
-  if [[ "$CHOICE" =~ "Wifi QR Code Scan and Connect" ]]; then
+  if [[ "$CHOICE" =~ "Scan and connect" ]]; then
     call_wifi_scan_gui
   fi
 
   if [[ "$CHOICE" =~ "See license" ]]; then
-    zenity --text-info --title="Wifi QR Copyright" --filename=/usr/share/doc/wifi-qr/copyright
+    zenity --text-info --title="WiFi QR Copyright" --filename=/usr/share/doc/wifi-qr/copyright --width=528 --height=780
     main_menu
   fi
 
   if [[ "$CHOICE" =~ "See version" ]]; then
-    zenity --info --icon-name=wifi-qr --title="Wifi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
+    zenity --info --icon-name=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
     main_menu
   fi
 }
@@ -71,7 +71,7 @@ call_wifi_gui() {
   files=$(ls -Q)
   WIFIS=$(eval zenity --list --column="SSID" --width=300 --height=600 $files)
   if [ -z "$WIFIS" ]; then
-    zenity --error --text="No Select SSID" --width=200 --title="Wifi and QR Code"
+    zenity --error --text="No WiFi network selected!" --width=200 --title="WiFi and QR Code"
     exit
   else
     call_wifi_pass
@@ -81,7 +81,7 @@ call_wifi_gui() {
   fi
 }
 
-#WIFI Command from terminal
+#WiFi Command from terminal
 call_wifi_terminal() {
   cd "$WIFIDIR"
   OLD_IFS=$IFS
@@ -100,7 +100,7 @@ call_wifi_terminal() {
 
   echo ""
   echo -e "${BLUE}===========================================${RESET}"
-  echo -e "${BOLD}${WHITE}please choose wifi ssid{RESET}"
+  echo -e "${BOLD}${WHITE}please choose WiFi ssid{RESET}"
   echo -e "${BLUE}===========================================${RESET}"
   read -e wifissid
   WIFIS=${array[$wifissid]}
@@ -167,7 +167,7 @@ call_wifi_scan() {
   wifiqrdata=$(cat $qr_data)
   rm -f $qr_data
 
-  #check WIFI QR or NOT
+  # Check if the QR contains WiFi data or not
   if echo $wifiqrdata | grep --quiet ^WIFI; then
     ## Go Go GUI and CLI Mod
     # ssid & key are not always in the same sequence - fix by using a dict and cut identifier for first key
@@ -194,7 +194,7 @@ call_wifi_scan() {
 
   else
     echo -e "${RED}==================${RESET}"
-    echo -e "${BOLD}${WHITE}Its not WIFI QR ${RESET}"
+    echo -e "${BOLD}${WHITE}Its not WiFi QR ${RESET}"
     echo -e "${RED}==================${RESET}"
     echo -e "${BOLD}${BLUE}$wifiqrdata ${RESET}"
     echo -e "${BLUE}==================${RESET}"
@@ -210,7 +210,7 @@ call_wifi_scan_gui() {
   call_wifi_scan
   # Function with QR data
   if [[ "$QSSIDO" =~ "ON" ]]; then
-    zenity --question --title="Connect to Wifi" --text="Connect to $QSSID" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
+    zenity --question --title="Connect to WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
     if [ $? = 0 ]; then
       scan_connect
     else
@@ -219,7 +219,7 @@ call_wifi_scan_gui() {
   elif
     [[ "$QSSIDO" =~ "OFF" ]]
   then
-    zenity --question --title="SSID can't find" --text="Can't find $QSSID, Its Online ? on off and retry to scan ?" --width=200 --height=120 --icon-name=network-wireless-offline 2>/dev/null
+    zenity --question --title="Can't find WiFi" --text="Can't find '$QSSID'.\nDo you want to retry the scan?" --width=200 --height=120 --icon-name=network-wireless-offline 2>/dev/null
     if [ $? = 0 ]; then
       nmcli radio wifi off
       scan_connect
@@ -272,8 +272,8 @@ case $1 in
 	Please use	g for GUI Main Menu 
 			c for WiFi QR Create GUI
 			t for WiFi QR Create Terminal
-			s for QR Scan and Auto Connect Wifi
-			q for QR Scan and Connect Wifi GUI
+			s for QR Scan and Auto Connect WiFi
+			q for QR Scan and Connect WiFi GUI
 			v for WiFi-QR Version is $VERSION
 		"
   ;;
