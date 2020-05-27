@@ -35,6 +35,8 @@ or using graphics menu
 - [x] This network is not available. 
 - [ ] QR Scan Auto Connect Hidden Network
 - [ ] icons
+- [ ] Migration to nmcli
+- [ ] Additional LDAP Login
 
 ###  Improve
 Still need to improve
