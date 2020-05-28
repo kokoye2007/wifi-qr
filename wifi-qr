@@ -135,7 +135,7 @@ call_wifi_pass() {
   fi
   echo -e "${GREEN}"
   echo ""
-  echo "SSID:    $WIFIS"
+  echo "SSID:    $SSID"
   echo "PASS:    $KEEY"
   echo "TYPE:    $PSSK"
   echo "HIDE:    $H"
