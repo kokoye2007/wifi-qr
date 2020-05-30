@@ -42,9 +42,10 @@ main_menu() {
     --title="WiFi and QR Code" \
     --text="Choose:" \
     --radiolist \
-    --width=300 --height=220 \
+    --width=300 --height=320 \
     --column="Check" --column="Option" \
     TRUE "Scan and connect" \
+    FALSE "Share current WiFi" \
     FALSE "Share saved WiFi" \
     FALSE "See license" \
     FALSE "See version")
@@ -52,6 +53,9 @@ main_menu() {
   #Menu Select
   if [[ "$CHOICE" =~ "Share saved WiFi" ]]; then
     call_wifi_gui
+
+  elif [[ "$CHOICE" =~ "Share current WiFi" ]]; then
+    call_current_wifi_gui
   
   elif [[ "$CHOICE" =~ "Scan and connect" ]]; then
     call_wifi_scan_gui
@@ -82,11 +86,19 @@ call_wifi_gui() {
     zenity --error --text="No WiFi network selected!" --width=200 --title="WiFi and QR Code"
     exit
   else
+    call_qr_gui
+  fi
+}
+
+call_qr_gui() {
     call_wifi_pass
     QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]')"
     qrencode -l h -s 14 -o $QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
-    xdg-open $QR_PNG 
-  fi
+    xdg-open $QR_PNG
+}
+call_current_wifi_gui() {
+	current_wifi_ssid
+	call_qr_gui
 }
 
 #WiFi Command from terminal
@@ -124,15 +136,13 @@ terminal_qr() {
   echo 
 }
 
-current_wifi_qr() {
+current_wifi_ssid() {
   WIFIS="$(nmcli -t -f active,ssid dev wifi | egrep '^yes' | cut -d\: -f2)"
-
   echo -e "${BLUE}===========================================${RESET}"
   echo -e "\nYou current active SSID is:${BOLD}${RED} $WIFIS\n ${RESET}"
   echo -e "${BLUE}===========================================${RESET}"
-
-  terminal_qr
 }
+
 
 #Data Extractor nmcli version
 call_wifi_pass() {
@@ -346,6 +356,7 @@ case $1 in
 			q for QR Scan and Connect WiFi GUI
 			v for WiFi-QR Version is $VERSION
 		"
-		current_wifi_qr
+  current_wifi_ssid
+  terminal_qr
   ;;
 esac
