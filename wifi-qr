@@ -20,7 +20,7 @@ GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
 RESET=$(tput sgr0)
 BOLD=$(tput bold)
-VERSION=0.1
+VERSION=0.1.1
 
 
 ## NMCLI no need SUDO ## 0.1.1
@@ -52,20 +52,19 @@ main_menu() {
   #Menu Select
   if [[ "$CHOICE" =~ "Share saved WiFi" ]]; then
     call_wifi_gui
-  fi
-
-  if [[ "$CHOICE" =~ "Scan and connect" ]]; then
+  
+  elif [[ "$CHOICE" =~ "Scan and connect" ]]; then
     call_wifi_scan_gui
-  fi
 
-  if [[ "$CHOICE" =~ "See license" ]]; then
+  elif [[ "$CHOICE" =~ "See license" ]]; then
     zenity --text-info --title="WiFi QR Copyright" --filename=/usr/share/doc/wifi-qr/copyright --width=528 --height=780
     main_menu
-  fi
 
-  if [[ "$CHOICE" =~ "See version" ]]; then
+  elif [[ "$CHOICE" =~ "See version" ]]; then
     zenity --info --icon-name=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
     main_menu
+else
+	exit 0
   fi
 }
 

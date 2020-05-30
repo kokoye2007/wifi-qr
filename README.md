@@ -7,8 +7,12 @@ now i did it, **wifi-qr**.
 we can do like Xiaomi Phone.
 using zbarcam via zbar-tools and qrencode.
 
+## v0.1.1 is using bash reading replace with nmcli
+
 ## Generate WIFI QR
-it's easy, we check ``/etc/NetworkManager/system-connections`` and generate WPA, WEP and Open, also HIDDEN network.
+it's easy, 
+we check ``/etc/NetworkManager/system-connections`` and generate WPA, WEP and Open, also HIDDEN network.
+> now using nmcli
 you can use command line via
 * ``sudo wifi-qr t`` for terminal only QR.
 * ``sudo wifi-qr g`` for PNG file QR export.
@@ -33,19 +37,15 @@ or using graphics menu
 - [x] QR Scan and Auto Connect
 - [x] It's Not Wifi QR
 - [x] This network is not available. 
-- [ ] QR Scan Auto Connect Hidden Network
+- [x] Migration to nmcli
+- [x] QR Share Hidden Network
+- [x] QR Scan Auto Connect Hidden Network
 - [ ] icons
-- [ ] Migration to nmcli
 - [ ] Additional LDAP Login
 
 ###  Improve
-Still need to improve
-* QR is NOT Wifi Data ? warning and exit.
-  * grep and zenity 
-* Wifi Scan for QR SSID, its Do not exit ? warning ? Rescan
-   * nmcli, grep, zenity 
-* HIDDEN Network Connect
-   * nmcli
+ All is done
+ Just need for LDAP and LEAP
  
 
 ```
