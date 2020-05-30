@@ -22,11 +22,18 @@ RESET=$(tput sgr0)
 BOLD=$(tput bold)
 VERSION=0.1
 
+
+## NMCLI no need SUDO ## 0.1.1
 #Check root or sudo
-if [ "$(id -u)" != "0" ]; then
-  echo "This script must be run as root" 1>&2
-  exit 1
-fi
+#if [ "$(id -u)" != "0" ]; then
+#  echo "This script must be run as root" 1>&2
+#  exit 1
+#fi
+
+#RAW DATA SAMPLE
+#"WIFI:S:$SSID;P:$PASSWORD;T:$KEY_TYPE;H:$true;"
+#qrencode -o - -t UTF8 
+#qrencode -l h -s 14 -o /tmp/$QR 
 
 #GUI Mainmenu
 main_menu() {
@@ -62,31 +69,31 @@ main_menu() {
   fi
 }
 
-#Working DIR
-WIFIDIR=/etc/NetworkManager/system-connections
 
 #GUI
 call_wifi_gui() {
-  cd "$WIFIDIR"
-  files=$(ls -Q)
-  WIFIS=$(eval zenity --list --column="SSID" --width=300 --height=600 $files)
+	IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
+
+  WIFIS=$(zenity --list --column="SSID" --width=300 --height=600 "${wifilist[@]}")
+
   if [ -z "$WIFIS" ]; then
     zenity --error --text="No WiFi network selected!" --width=200 --title="WiFi and QR Code"
     exit
   else
     call_wifi_pass
-    QR_PNG="wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]')"
-    qrencode -l h -s 14 -o /tmp/$QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
-    xdg-open /tmp/$QR_PNG && rm $_
+    QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]')"
+    qrencode -l h -s 14 -o $QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+    xdg-open $QR_PNG 
   fi
 }
 
 #WiFi Command from terminal
 call_wifi_terminal() {
-  cd "$WIFIDIR"
+#  cd "$WIFIDIR"
+ IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
   OLD_IFS=$IFS
   IFS=$'\n'
-  for l in $(ls | sort); do
+  for l in ${wifilist[@]}; do
     array[$i]=$l
     i=$(($i + 1))
   done
@@ -112,12 +119,11 @@ call_wifi_terminal() {
   qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
   echo
 }
-
 call_wifi_pass() {
-  SSID=$(awk -F"=" '/^ssid/ {print $2}' "$WIFIS")
-  KEEY=$(awk -F"=" '/^psk/ {print $2}' "$WIFIS")
-  PSK=$(awk -F"=" '/^key-mgmt/ {print $2}' "$WIFIS")
-  HIDN=$(awk -F"=" '/^hidden/ {print $2}' "$WIFIS")
+  SSID="$WIFIS"
+  KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "$WIFIS")
+  PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "$WIFIS")
+  HIDN=$(nmcli -g 802-11-wireless.hidden connection show "$WIFIS")
 
   if [[ "$PSK" == *"wpa"* ]]; then
     PSSK="T:WPA;"
@@ -125,11 +131,11 @@ call_wifi_pass() {
     [[ "$PSK" == "wep" ]]
   then
     PSSK="T:WEP;"
+  else
+   PSSK=""
   fi
-  if [[ ! -z "$HIDN" ]]; then
-    if [[ "$HIDN" == *"true"* ]]; then
+  if [[ "$HIDN" == *"yes"* ]]; then
       H="H:true;"
-    fi
   else
     H=""
   fi
@@ -182,12 +188,12 @@ call_wifi_scan() {
     #echo $QINFO
     if nmcli device wifi list | grep -w "$QSSID"; then
       echo -e "${GREEN}==================${RESET}"
-      echo -e "${BOLD}${WHITE}$QSSID is Online{RESET}"
+      echo -e "${BOLD}${WHITE}$QSSID is Online ${RESET}"
       echo -e "${GREEN}==================${RESET}"
       QSSIDO=ON
     else
       echo -e "${RED}==================${RESET}"
-      echo -e "${BOLD}${WHITE}cant see $QSSID{RESET}"
+      echo -e "${BOLD}${WHITE}cant see $QSSID ${RESET}"
       echo -e "${RED}==================${RESET}"
       QSSIDO=OFF
     fi
@@ -222,6 +228,7 @@ call_wifi_scan_gui() {
     zenity --question --title="Can't find WiFi" --text="Can't find '$QSSID'.\nDo you want to retry the scan?" --width=200 --height=120 --icon-name=network-wireless-offline 2>/dev/null
     if [ $? = 0 ]; then
       nmcli radio wifi off
+      sleep 5
       scan_connect
     else
       exit
@@ -236,10 +243,7 @@ scan_connect() {
   nmcli dev wifi connect "$QSSID" password "$QKEES" >/dev/null 2>&1
 }
 
-#RAW DATA SAMPLE
-#"WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
-#qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
-#qrencode -l h -s 14 -o /tmp/$QR "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+
 
 case $1 in
 
