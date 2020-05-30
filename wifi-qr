@@ -67,7 +67,7 @@ main_menu() {
   elif [[ "$CHOICE" =~ "See version" ]]; then
     zenity --info --icon-name=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
     main_menu
-else
+ else
 	exit 0
   fi
 }
@@ -75,7 +75,7 @@ else
 
 #GUI
 call_wifi_gui() {
-	IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
+   IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
 
   WIFIS=$(zenity --list --column="SSID" \
 	  --width=300 --height=600 \
@@ -83,7 +83,7 @@ call_wifi_gui() {
 	  "${wifilist[@]}")
 
   if [ -z "$WIFIS" ]; then
-    zenity --error --text="No WiFi network selected!" --width=200 --title="WiFi and QR Code"
+	  ZZ
     exit
   else
     call_qr_gui
@@ -137,7 +137,7 @@ terminal_qr() {
 }
 
 current_wifi_ssid() {
-  WIFIS="$(nmcli -t -f active,ssid dev wifi | egrep '^yes' | cut -d\: -f2)"
+  WIFIS="$(nmcli -t -f active,ssid dev wifi | egrep '^yes' | cut -d\: -f2 | tr -d '\r\n')"
   echo -e "${BLUE}===========================================${RESET}"
   echo -e "\nYou current active SSID is:${BOLD}${RED} $WIFIS\n ${RESET}"
   echo -e "${BLUE}===========================================${RESET}"
@@ -175,7 +175,37 @@ call_wifi_pass() {
   echo -e "${RESET}"
 }
 
-#Scan with Webcaom
+#WiFi Command from terminal
+call_wifi_terminal() {
+   IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
+
+  for l in "${wifilist[@]}"; do
+    array[$i]=$l
+    i=$(($i + 1))
+  done
+
+  i=0
+  for m in "${array[@]}"; do
+    echo
+    echo "$((i++))) $(basename "$m")"
+  done
+  IFS=$OLD_IFS
+
+  echo ""
+  echo -e "${BLUE}===========================================${RESET}"
+  echo -e "${BOLD}${WHITE}please choose WiFi ssidi ${RESET}"
+  echo -e "${BLUE}===========================================${RESET}"
+  read -e wifissid
+  WIFIS=${array[$wifissid]}
+  echo -e "${BLUE}===========================================${RESET}"
+  echo -e "${BOLD}${WHITE} $WIFIS"
+  echo -e "\nYou choose SSID is: $WIFIS\n ${RESET}"
+  echo -e "${BLUE}===========================================${RESET}"
+  call_wifi_pass
+  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+  echo
+}
+
 call_wifi_scan() {
   # Vars
   wifiqrdata=''
@@ -202,7 +232,6 @@ call_wifi_scan() {
 
   # Check if the QR contains WiFi data or not
   if echo $wifiqrdata | grep --quiet ^WIFI; then
-
     ## Go Go GUI and CLI Mod
     # ssid & key are not always in the same sequence - fix by using a dict and cut identifier for first key
     declare -A wifiqrcred
@@ -285,8 +314,7 @@ call_wifi_scan_gui() {
     else
       exit
     fi
-  elif
-    [[ "$QSSIDO" =~ "OFF" ]]; then
+  elif [[ "$QSSIDO" =~ "OFF" ]]; then
     zenity --question --title="Can't find WiFi" --text="Can't find '$QSSID'.\nDo you want to retry the scan?" --width=200 --height=120 --icon-name=network-wireless-offline 2>/dev/null
     if [ $? = 0 ]; then
       nmcli radio wifi off

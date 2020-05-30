@@ -41,6 +41,10 @@ or using graphics menu
 - [x] QR Share Hidden Network
 - [x] QR Scan Auto Connect Hidden Network
 - [ ] icons
+<<<<<<< HEAD
+=======
+- [ ] Migration to nmcli
+>>>>>>> master
 - [ ] Additional LDAP Login
 
 ###  Improve
