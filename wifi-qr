@@ -338,7 +338,7 @@ scan_connect_hidden() {
 }
 
 check_for_package() {
-  PKG="qrencode zbar-tools"
+  PKG="nmcli qrencode zbar-tools"
   dpkg -s $PKG 1>/dev/null 2>&1
   while [ $? != 0 ]; do
     read -p "Required packages for this program not found!! Do you wish to install required packages ${BOLD}$PKG${RESET} [Y/n]? " yn
