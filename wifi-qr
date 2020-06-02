@@ -74,6 +74,7 @@ main_menu() {
 
 #GUI
 call_wifi_gui() {
+  check_for_package
   IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
 
   WIFIS=$(zenity --list --column="SSID" \
@@ -102,6 +103,7 @@ call_current_wifi_gui() {
 
 #WiFi Command from terminal
 call_wifi_terminal() {
+  check_for_package
   IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
   OLD_IFS=$IFS
   IFS=$'\n'
@@ -130,6 +132,7 @@ call_wifi_terminal() {
 }
 
 terminal_qr() {
+  check_for_package
   call_wifi_pass
   qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
   echo 
@@ -229,8 +232,7 @@ call_wifi_scan() {
       echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
       echo -e "${RED}==================${RESET}"
       QSSIDO=OFF
-    fi
- 
+    fi 
 
   else
     echo -e "${RED}==================${RESET}"
@@ -260,18 +262,21 @@ call_wifi_scan() {
 
 
 call_wifi_scan_terminal() {
-  call_wifi_scan
-     if [[ "$QHIDE" == "true" ]]; then
-	scan_connect_hidden
-     elif [[ "$QSSIDO" == "ON" ]]; then
-	scan_connect
-     else
-	echo "Can't find Network and Can't Connect"
-	exit 0
-     fi
+  check_for_package
+	call_wifi_scan
+
+	if [[ "$QHIDE" == "true" ]]; then
+		scan_connect_hidden
+	elif [[ "$QSSIDO" == "ON" ]]; then
+		scan_connect
+	else
+		echo "Can't find Network and Can't Connect"
+		exit 0
+	fi
 }
 
 call_wifi_scan_gui() {
+  check_for_package
   call_wifi_scan
   # Function with QR data
   if [[ "$QSSIDO" =~ "ON" ]]; then
@@ -330,6 +335,22 @@ scan_connect_hidden() {
   nmcli con modify "$QSSID" wifi-sec.key-mgmt "$NTYPE" >/dev/null 2>&1
   nmcli con modify "$QSSID" wifi-sec.psk "$QKEES" >/dev/null 2>&1
   nmcli con up "$QSSID" >/dev/null 2>&1
+}
+
+check_for_package() {
+  PKG="qrencode zbar-tools"
+  dpkg -s $PKG 1>/dev/null 2>&1
+  while [ $? != 0 ]; do
+    read -p "Required packages for this program not found!! Do you wish to install required packages ${BOLD}$PKG${RESET} [Y/n]? " yn
+    case $yn in
+        [Yy]* ) 
+          echo -e "${BOLD}${RED}Installation requires sudo privileges!! ... ${RESET}"
+          sleep 2
+          sudo apt install -y $PKG; break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+  done
 }
 
 case $1 in
