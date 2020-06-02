@@ -1,0 +1,234 @@
+Description: remove wifi_call_terminal duplicate
+ Duplicate remove and text aligment
+ .
+ wifi-qr (0.1-1) unstable; urgency=medium
+ .
+   * Initial upload.
+Author: kokoye2007 <kokoye2007@gmail.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: 2020-06-02
+
+--- wifi-qr-0.1.orig/wifi-qr
++++ wifi-qr-0.1/wifi-qr
+@@ -66,7 +66,7 @@ main_menu() {
+   elif [[ "$CHOICE" =~ "See version" ]]; then
+     zenity --info --icon-name=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
+     main_menu
+- else
++  else
+ 	exit 0
+   fi
+ }
+@@ -74,7 +74,7 @@ main_menu() {
+ 
+ #GUI
+ call_wifi_gui() {
+-   IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
++  IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
+ 
+   WIFIS=$(zenity --list --column="SSID" \
+ 	  --width=300 --height=600 \
+@@ -90,10 +90,10 @@ call_wifi_gui() {
+ }
+ 
+ call_qr_gui() {
+-    call_wifi_pass
+-    QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]')"
+-    qrencode -l h -s 14 -o $QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+-    xdg-open $QR_PNG
++  call_wifi_pass
++  QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
++  qrencode -l h -s 14 -o $QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
++  xdg-open $QR_PNG
+ }
+ call_current_wifi_gui() {
+ 	current_wifi_ssid
+@@ -102,7 +102,7 @@ call_current_wifi_gui() {
+ 
+ #WiFi Command from terminal
+ call_wifi_terminal() {
+- IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
++  IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
+   OLD_IFS=$IFS
+   IFS=$'\n'
+   for l in ${wifilist[@]}; do
+@@ -174,37 +174,6 @@ call_wifi_pass() {
+   echo -e "${RESET}"
+ }
+ 
+-#WiFi Command from terminal
+-call_wifi_terminal() {
+-   IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli -g NAME connection))'
+-
+-  for l in "${wifilist[@]}"; do
+-    array[$i]=$l
+-    i=$(($i + 1))
+-  done
+-
+-  i=0
+-  for m in "${array[@]}"; do
+-    echo
+-    echo "$((i++))) $(basename "$m")"
+-  done
+-  IFS=$OLD_IFS
+-
+-  echo ""
+-  echo -e "${BLUE}===========================================${RESET}"
+-  echo -e "${BOLD}${WHITE}please choose WiFi ssidi ${RESET}"
+-  echo -e "${BLUE}===========================================${RESET}"
+-  read -e wifissid
+-  WIFIS=${array[$wifissid]}
+-  echo -e "${BLUE}===========================================${RESET}"
+-  echo -e "${BOLD}${WHITE} $WIFIS"
+-  echo -e "\nYou choose SSID is: $WIFIS\n ${RESET}"
+-  echo -e "${BLUE}===========================================${RESET}"
+-  call_wifi_pass
+-  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+-  echo
+-}
+-
+ call_wifi_scan() {
+   # Vars
+   wifiqrdata=''
+@@ -244,28 +213,28 @@ call_wifi_scan() {
+     QHIDE=${wifiqrcred[H]}
+     QTYPE=${wifiqrcred[T]}
+ 
+-   if [[ "$QHIDE" == "true" ]]; then
+-       echo -e "${GREEN}==================${RESET}"
+-       echo -e "${BOLD}${WHITE}It's is HIDDEN ${RESET}"
+-       echo -e "${GREEN}==================${RESET}"
++    if [[ "$QHIDE" == "true" ]]; then
++      echo -e "${GREEN}==================${RESET}"
++      echo -e "${BOLD}${WHITE}It's is HIDDEN ${RESET}"
++      echo -e "${GREEN}==================${RESET}"
+ 
+-   elif nmcli device wifi list | grep -w "$QSSID"; then
++    elif nmcli device wifi list | grep -w "$QSSID"; then
+       echo -e "${GREEN}==================${RESET}"
+       echo -e "${BOLD}${WHITE}$QSSID is Online ${RESET}"
+       echo -e "${GREEN}==================${RESET}"
+       QSSIDO=ON
+ 
+-   else
++    else
+       echo -e "${RED}==================${RESET}"
+-      echo -e "${BOLD}${WHITE}cant see $QSSID ${RESET}"
++      echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
+       echo -e "${RED}==================${RESET}"
+       QSSIDO=OFF
+-   fi 
++    fi
+  
+ 
+   else
+     echo -e "${RED}==================${RESET}"
+-    echo -e "${BOLD}${WHITE}Its not WiFi QR ${RESET}"
++    echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
+     echo -e "${RED}==================${RESET}"
+     echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
+     echo -e "${BLUE}==================${RESET}"
+@@ -275,13 +244,13 @@ call_wifi_scan() {
+ # key-mgmt type convert
+ 
+   if [[ -z "$QTYPE" ]] ; then
+-         NTYPE="none"
++    NTYPE="none"
+   elif [[ "$QTYPE" == "WEP" ]] ; then
+-         NTYPE="ieee8021x"
++    NTYPE="ieee8021x"
+   elif [[ "$QTYPE" == "WPA" ]] ; then
+-         NTYPE="wpa-psk"
++    NTYPE="wpa-psk"
+   else
+-         echo "unknow or need to add key-mgmt type"
++    echo "unknow or need to add key-mgmt type"
+   fi
+ 
+ 
+@@ -291,16 +260,15 @@ call_wifi_scan() {
+ 
+ 
+ call_wifi_scan_terminal() {
+-	call_wifi_scan
+-
+-	if [[ "$QHIDE" == "true" ]]; then
+-		scan_connect_hidden
+-	elif [[ "$QSSIDO" == "ON" ]]; then
+-		scan_connect
+-	else
+-		echo "Can't find Network and Can't Connect"
+-		exit 0
+-	fi
++  call_wifi_scan
++     if [[ "$QHIDE" == "true" ]]; then
++	scan_connect_hidden
++     elif [[ "$QSSIDO" == "ON" ]]; then
++	scan_connect
++     else
++	echo "Can't find Network and Can't Connect"
++	exit 0
++     fi
+ }
+ 
+ call_wifi_scan_gui() {
+@@ -314,23 +282,38 @@ call_wifi_scan_gui() {
+       exit
+     fi
+   elif [[ "$QSSIDO" =~ "OFF" ]]; then
+-    zenity --question --title="Can't find WiFi" --text="Can't find '$QSSID'.\nDo you want to retry the scan?" --width=200 --height=120 --icon-name=network-wireless-offline 2>/dev/null
+-    if [ $? = 0 ]; then
++    CHOICE=$(zenity --list \
++      --title="Can't find WiFi" \
++      --text="Choose:" \
++      --radiolist \
++      --width=400 --height=180 \
++      --column="Check" --column="Option" \
++      --icon-name=network-wireless-offline \
++      TRUE "Retry scanning internally" \
++      FALSE "Retry submitting another QR Code" )
++    if [[ "$CHOICE" =~ "Retry scanning internally" ]]; then
++      echo e "${BOLD}Scanning in progess ... ${Reset}"
+       nmcli radio wifi off
+       sleep 5
+       scan_connect
++      if [ $? != 0 ]; then
++        echo -e "${RED}==================${RESET}"
++        echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
++        echo -e "${RED}==================${RESET}"
++        exit
++      fi
++    elif [[ "$CHOICE" =~ "Retry submitting another QR Code" ]]; then
++      call_wifi_scan_gui
+     else
+       exit
+     fi
+-  elif 
+-    [[ "$QHIDE" =~ "true" ]]; then
++  elif [[ "$QHIDE" =~ "true" ]]; then
+     zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
+-       if [ $? = 0 ]; then
+-      	  scan_connect_hidden
+-    	else
+-      	  exit
+-       fi
+-
++    if [ $? = 0 ]; then
++      scan_connect_hidden
++    else
++      exit
++    fi
+   fi
+ }
+ 
