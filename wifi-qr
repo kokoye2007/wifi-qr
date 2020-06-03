@@ -83,8 +83,7 @@ call_wifi_gui() {
 	  "${wifilist[@]}")
 
   if [ -z "$WIFIS" ]; then
-	  ZZ
-    exit
+    exit 0
   else
     call_qr_gui
   fi
@@ -238,6 +237,7 @@ call_wifi_scan() {
     echo -e "${RED}==================${RESET}"
     echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
     echo -e "${RED}==================${RESET}"
+    echo -e "${BLUE}==================${RESET}"
     echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
     echo -e "${BLUE}==================${RESET}"
     QSSIDO=NOWIFI
@@ -376,7 +376,9 @@ case $1 in
   call_wifi_scan_gui
   ;;
 [Vv])
-  echo "WiFi-QR Version is $VERSION"
+      echo -e "${GREEN}==================${RESET}"
+      echo -e "${BOLD} ${WHITE} WiFi-QR $VERSION ${RESET}"
+      echo -e "${GREEN}==================${RESET}"
   ;;
 *)
   echo -e "\nInvalid input\n
