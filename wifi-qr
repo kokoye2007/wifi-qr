@@ -91,10 +91,14 @@ call_wifi_gui() {
 
 call_qr_gui() {
   call_wifi_pass
-  QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
-  qrencode -l h -s 14 -o $QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
-  xdg-open $QR_PNG
+  QR_FILE_NAME="wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
+  SAVE_QR_DIR="${HOME}/Pictures/"
+  QR_PNG="$(zenity --file-selection --save --confirm-overwrite --filename=$SAVE_QR_DIR/$QR_FILE_NAME)"
+    #QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
+    qrencode -l h -s 14 -o $QR_PNG "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+    xdg-open $QR_PNG
 }
+
 call_current_wifi_gui() {
 	current_wifi_ssid
 	call_qr_gui
