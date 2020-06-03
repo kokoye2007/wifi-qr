@@ -82,8 +82,7 @@ call_wifi_gui() {
 	  "${wifilist[@]}")
 
   if [ -z "$WIFIS" ]; then
-	  ZZ
-    exit
+    exit 0
   else
     call_qr_gui
   fi
@@ -236,6 +235,7 @@ call_wifi_scan() {
     echo -e "${RED}==================${RESET}"
     echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
     echo -e "${RED}==================${RESET}"
+    echo -e "${BLUE}==================${RESET}"
     echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
     echo -e "${BLUE}==================${RESET}"
     QSSIDO=NOWIFI
@@ -261,7 +261,9 @@ call_wifi_scan() {
 
 call_wifi_scan_terminal() {
   call_wifi_scan
-     if [[ "$QHIDE" == "true" ]]; then
+     if [[ "$QSSIDO" == "NOWIFI" ]]; then
+	exit 0
+     elif [[ "$QHIDE" == "true" ]]; then
 	scan_connect_hidden
      elif [[ "$QSSIDO" == "ON" ]]; then
 	scan_connect
