@@ -1,5 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: wifi-qr
+Upstream-Contact: kokoye2007 <kokoye2007@gmail.com>
 Source: https://github.com/kokoye2007/wifi-qr.git
 
 Files: *

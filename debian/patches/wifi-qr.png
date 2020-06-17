@@ -1,0 +1,35 @@
+Description: wifi-qr to wifi-qr.png
+ base on https://appstream.debian.org/sid/main/issues/wifi-qr.html
+ error fix with wifi-qr to wifi-qr.png on desktop file.
+ .
+ wifi-qr (0.1-2) unstable; urgency=medium
+ .
+   * current and hidden arrary
+Author: kokoye2007 <kokoye2007@gmail.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: 2020-06-17
+
+Index: wifi-qr-0.1/wifi-qr.desktop
+===================================================================
+--- wifi-qr-0.1.orig/wifi-qr.desktop
++++ wifi-qr-0.1/wifi-qr.desktop
+@@ -4,7 +4,7 @@ Version=0.1
+ Name=WiFi QR
+ Comment=Wifi share with QR Code
+ Exec=sh -c 'wifi-qr g'
+-Icon=wifi-qr
++Icon=wifi-qr.png
+ Keywords="QR; WiFi; Password; Share;"
+ Terminal=false
+ Categories=GNOME;Utility;
