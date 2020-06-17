@@ -7,7 +7,7 @@ now i did it, **wifi-qr**.
 we can do like Xiaomi Phone.
 using zbarcam via zbar-tools and qrencode.
 
-## v0.1.1 is using bash reading replace with nmcli
+## v0.1-1 is using bash reading replace with nmcli
 
 ## Generate WIFI QR
 it's easy, 

@@ -3,14 +3,15 @@ Section: utils
 Priority: optional
 Maintainer: kokoye2007 <kokoye2007@gmail.com>
 Build-Depends: debhelper-compat (= 13)
+Rules-Requires-Root: no
 Standards-Version: 4.5.0
 Homepage: https://github.com/kokoye2007/wifi-qr
 Vcs-git: https://github.com/kokoye2007/wifi-qr.git
 Vcs-browser: https://github.com/kokoye2007/wifi-qr
 
 Package: wifi-qr
-Architecture: any
-Depends: ${misc:Depends}, zenity, qrencode, zbar-tools, nmcli
+Architecture: all
+Depends: ${misc:Depends}, zenity, qrencode, zbar-tools
 Description: WiFi Share and Connect with QR
  PC to Android Network SSID Password share with QR code.
  Idea from Xiaomi Android WiFi Password share with QR
