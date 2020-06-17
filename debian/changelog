@@ -4,12 +4,6 @@ wifi-qr (0.2-1) unstable; urgency=medium
 
  -- kokoye2007 <kokoye2007@gmail.com>  Thu, 18 Jun 2020 15:36:47 +0630
 
-wifi-qr (0.1-2) unstable; urgency=medium
-
-  * current and hidden arrary
-
- -- kokoye2007 <kokoye2007@gmail.com>  Wed, 10 Jun 2020 12:43:23 -0400
-
 wifi-qr (0.1-1) unstable; urgency=medium
 
   * Initial upload.
