@@ -8,14 +8,15 @@ we can do like Xiaomi Phone.
 using zbarcam via zbar-tools and qrencode.
 
 ## v0.1-1 is using bash reading replace with nmcli
+## v0.1-2 shellcheck pass for #9
 
 ## Generate WIFI QR
 it's easy, 
 we check ``/etc/NetworkManager/system-connections`` and generate WPA, WEP and Open, also HIDDEN network.
 > now using nmcli
 you can use command line via
-* ``sudo wifi-qr t`` for terminal only QR.
-* ``sudo wifi-qr g`` for PNG file QR export.
+* ``wifi-qr t`` for terminal only QR.
+* ``wifi-qr g`` for PNG file QR export.
 or using graphics menu.
 * ``Share saved WiFi``
 
@@ -23,8 +24,8 @@ or using graphics menu.
 It's like Android QR Scanner,  scan and connect to network.
 *iOS is just see password*
 from terminal 
-* ``sudo wifi-qr s`` for auto connect.
-* ``sudo wifi-qr q`` for show SSID, PASS and Connect.
+* ``wifi-qr s`` for auto connect.
+* ``wifi-qr q`` for show SSID, PASS and Connect.
 or using graphics menu
 * ``Scan and connect``
 
