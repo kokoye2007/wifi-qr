@@ -41,12 +41,13 @@ or using graphics menu
 - [x] Migration to nmcli
 - [x] QR Share Hidden Network
 - [x] QR Scan Auto Connect Hidden Network
-- [ ] icons
+- [x] icons
 - [ ] Additional LDAP Login
 
 ###  Improve
  All is done
  Just need for LDAP and LEAP
+ We will come back when QR Code and Scanner support LDAP and relative thing.
  
 
 ```
