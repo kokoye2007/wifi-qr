@@ -1,4 +1,3 @@
 wifi-qr usr/bin
 wifi-qr.desktop usr/share/applications
-wifi-qr.png usr/share/icons
-wifi-qr.policy usr/share/polkit-1/actions
+wifi-qr.svg usr/share/icons
