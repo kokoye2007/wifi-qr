@@ -1,3 +1,9 @@
+wifi-qr (0.2-1) unstable; urgency=medium
+
+  * Shellcheck and close issue #9
+
+ -- kokoye2007 <kokoye2007@gmail.com>  Thu, 18 Jun 2020 15:36:47 +0630
+
 wifi-qr (0.1-2) unstable; urgency=medium
 
   * current and hidden arrary
