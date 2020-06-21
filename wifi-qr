@@ -19,7 +19,7 @@ GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
 RESET=$(tput sgr0)
 BOLD=$(tput bold)
-VERSION=0.1-2
+VERSION=0.2
 
 ## NMCLI no need SUDO ## 0.1.1
 #Check root or sudo
@@ -180,9 +180,7 @@ call_wifi_pass() {
 }
 
 call_wifi_scan() {
-  # Vars
   wifiqrdata=''
-  # Current directory to var
   # tmp data-matrix holder
   cwd="/tmp/"
   qr_data="$cwd/wifi-qr-scan"
