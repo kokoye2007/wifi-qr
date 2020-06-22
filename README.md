@@ -7,6 +7,18 @@ now i did it, **wifi-qr**.
 we can do like Xiaomi Phone.
 using zbarcam via zbar-tools and qrencode.
 
+## Contributor 
+@BT-mfasola - Arrary Redesign
+@i-need-to-tell-you-something - Grammer and Typo Fix
+@Pabs3 - Shellcheck Recommend  
+@Baco - README update for sudo remove
+@naing2victor - Assistant 
+@waiyanwinhtain - Tester and Bug Report
+@hosiet - Mentor and Sponsor for Debian
+@paddatrapper- Mentor and Sponsor for Debian
+
+- Sorry for Code Clean, Rebase and force upload.
+
 ## v0.1-1 is using bash reading replace with nmcli
 ## v0.1-2 shellcheck pass for #9
 
