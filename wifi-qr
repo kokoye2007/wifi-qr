@@ -190,9 +190,13 @@ call_zbar_cam_scan() {
   # Last job running in background eg. zbarcam
   pid=$!
   # Sleep loop until $qr_data file has content
+  local i=0
+  local chars="/-\|"
+  echo -en "  Scanning QR Code" "\r"
   while [[ ! -s $qr_data ]]; do
-    sleep 1
-    pgrep -x zbarcam >/dev/null && echo "Still Scanning" || exit 0
+    sleep 0.5
+    pgrep -x zbarcam >/dev/null && echo -en "${chars:$i:1}" "\r" || exit 0
+    i=$(((i+1)%${#chars}))
     # cleanup - add a trap that will remove $qr_data and kill zbarcam
     # if any of the signals - SIGHUP SIGINT SIGTERM it received.
     trap 'rm -f "$qr_data" ; kill -s 9 "$pid"; exit' SIGHUP SIGINT SIGTERM
