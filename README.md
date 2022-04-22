@@ -1,11 +1,35 @@
 ﻿# Wifi QR 
+ 
+## WiFi Share and Connect with QR
 
-Hi everyone 
-i am think about Xiaomi Phone Wifi, Hotspot Share with QR, 
-also scan with auto connect to WIFI.
-now i did it, **wifi-qr**. 
-we can do like Xiaomi Phone.
-using zbarcam via zbar-tools and qrencode.
+ Xiaomi Android phones has started using QR to use WiFi for sharing.
+ The idea was to get started with Bash, from Android to PC or PC to
+ Mobile, and use Interface for zenity, QR for zbar and qrencode,
+ and nmcli from Network-Manager for Network. For security,
+ you can use WPA, WPA2, WEP, Open and share with the Hidden Network.
+ QR code does not support LDAP Network and VPN.
+ Android can easily generate WiFi QR, but iOS isn't quite so sure.
+
+
+## Contributor 
+
+@BT-mfasola - Arrary Redesign
+
+@i-need-to-tell-you-something - Grammer and Typo Fix
+
+@Pabs3 - Shellcheck Recommend  
+
+@Baco - README update for sudo remove
+
+@naing2victor - Assistant 
+
+@waiyanwinhtain - Tester and Bug Report
+
+@hosiet - Mentor and Sponsor for Debian
+
+@paddatrapper- Mentor and Sponsor for Debian
+
+- Sorry for Code Clean, Rebase and force upload.
 
 ## v0.1-1 is using bash reading replace with nmcli
 ## v0.1-2 shellcheck pass for #9
