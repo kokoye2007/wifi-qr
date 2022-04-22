@@ -29,6 +29,8 @@
 
 @paddatrapper- Mentor and Sponsor for Debian
 
+@arnabsen1729 - QR Scan from File via CLI and GUI 
+
 - Sorry for Code Clean, Rebase and force upload.
 
 ## v0.1-1 is using bash reading replace with nmcli
@@ -60,6 +62,7 @@ or using graphics menu
 - [x] QR Generate with GUI
 - [x] QR Generate with Terminal 
 - [x] QR Scan and Auto Connect
+- [x] QR Image File Scan and Auto Connect
 - [x] It's Not Wifi QR
 - [x] This network is not available. 
 - [x] Migration to nmcli
