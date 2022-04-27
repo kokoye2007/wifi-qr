@@ -412,6 +412,10 @@ case $1 in
     exit
   fi
   ;;
+[Pp])
+  echo "qr scan from file with gui"
+  call_file_select_and_scan_gui
+  ;;
 [Qq])
   echo "qr scan with gui"
   call_wifi_scan_gui "cam"
@@ -427,7 +431,8 @@ case $1 in
 			c for WiFi QR Create GUI
 			t for WiFi QR Create Terminal
 			s for QR Scan and Auto Connect WiFi
-			f [file] for QR Scan and Auto Connect WiFi from file
+			f Terminal [file] for QR Scan and Auto Connect WiFi from file
+			p With GUI [file] for QR Scan and Auto Connect WiFi from file
 			q for QR Scan and Connect WiFi GUI
 			v for WiFi-QR Version is $VERSION
 		"
