@@ -1,3 +1,10 @@
+wifi-qr (0.2-2) unstable; urgency=medium
+
+  * Improve Summary. (Closes: #989034)
+  * QR Code Scan from File Function Update.
+
+ -- kokoye2007 <kokoye2007@gmail.com>  Wed, 27 Apr 2022 17:11:19 +0630
+
 wifi-qr (0.2-1) unstable; urgency=medium
 
   * Shellcheck and close issue #9

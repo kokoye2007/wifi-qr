@@ -4,19 +4,19 @@ Priority: optional
 Maintainer: kokoye2007 <kokoye2007@gmail.com>
 Build-Depends: debhelper-compat (= 13)
 Rules-Requires-Root: no
-Standards-Version: 4.5.0
+Standards-Version: 4.6.0.1
 Homepage: https://github.com/kokoye2007/wifi-qr
-Vcs-git: https://github.com/kokoye2007/wifi-qr.git
-Vcs-browser: https://github.com/kokoye2007/wifi-qr
+Vcs-Git: https://github.com/kokoye2007/wifi-qr.git
+Vcs-Browser: https://github.com/kokoye2007/wifi-qr
 
 Package: wifi-qr
 Architecture: all
 Depends: ${misc:Depends}, zenity, qrencode, zbar-tools
-Description: WiFi Share and Connect with QR
- Xiaomi Android phones has started using QR to use WiFi for sharing.
- The idea was to get started with Bash, from Android to PC or PC to
- Mobile, and use Interface for zenity, QR for zbar and qrencode,
- and nmcli from Network-Manager for Network. For security,
- you can use WPA, WPA2, WEP, Open and share with the Hidden Network.
- QR code does not support LDAP Network and VPN.
- Android can easily generate WiFi QR, but iOS isn't quite so sure.
+Description: WiFi password share via QR codes
+ Shares WiFi SSID and password via a QR code.
+ Generate a QR code of a WiFi network with its password.
+ Scan QR codes and easily connect to WiFi Networks.
+ .
+ For Android, OS version 10 and above is supported.
+ .
+ For iOS, the Shortcut app supports generating WiFi QR codes.
