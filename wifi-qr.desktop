@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Version=0.1
+Name=WiFi QR
+Comment=Wifi share with QR Code
+Exec=sh -c 'wifi-qr g'
+Icon=wifi-qr.svg
+Keywords="QR; WiFi; Password; Share;"
+Terminal=false
+Categories=GNOME;Utility;
+Actions=ScanQR;CreateQR;
+
+[Desktop Action ScanQR]
+Name=Scan WiFi QR Code
+Exec=sh -c 'wifi-qr q'
+Terminal=false
+
+[Desktop Action CreateQR]
+Name=Create WiFi QR Code
+Exec=sh -c 'wifi-qr c'
+Terminal=false
