@@ -1,8 +1,16 @@
 Name: wifi-qr
+Version: 0.2
 Contact: kokoye2007@gmail.com
 Changelog: https://github.com/kokoye2007/wifi-qr
 Repository: https://github.com/kokoye2007/wifi-qr
 Repository-Browse: https://github.com/kokoye2007/wifi-qr
 Bug-Submit: https://github.com/kokoye2007/wifi-qr
 FAQ: https://github.com/kokoye2007/wifi-qr
-Donation: https://www.paypal.me/ubuntumm
+Abstract:
+ Shares WiFi SSID and password via a QR code.
+ Generate a QR code of a WiFi network with its password.
+ Scan QR codes and easily connect to WiFi Networks.
+ .
+ For Android, OS version 10 and above is supported.
+ .
+ For iOS, the Shortcuts app supports generating WiFi QR codes.
