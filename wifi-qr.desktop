@@ -2,12 +2,13 @@
 Type=Application
 Version=0.1
 Name=WiFi QR
+GenericName=WiFi QR
 Comment=Wifi share with QR Code
 Exec=sh -c 'wifi-qr g'
 Icon=wifi-qr.svg
-Keywords="QR; WiFi; Password; Share;"
+Keywords=qr;wifi;password;share;
 Terminal=false
-Categories=GNOME;Utility;
+Categories=Utility;Accessibility;
 Actions=ScanQR;ScanFileQR;CreateQR;
 
 [Desktop Action ScanQR]

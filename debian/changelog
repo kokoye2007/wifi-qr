@@ -1,6 +1,6 @@
 wifi-qr (0.2-3) unstable; urgency=medium
 
-  * issue #12 Password with special characters
+  * Fix issue #12 Password with special characters
 
  -- kokoye2007 <kokoye2007@gmail.com>  Wed, 19 Apr 2023 21:43:14 +0630
 

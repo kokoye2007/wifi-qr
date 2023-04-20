@@ -19,7 +19,7 @@ GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
 RESET=$(tput sgr0)
 BOLD=$(tput bold)
-VERSION=0.2
+VERSION=0.2-3
 
 ## NMCLI no need SUDO ## 0.1.1
 #Check root or sudo
@@ -101,7 +101,7 @@ call_qr_gui() {
 	  main_menu
   else
     #QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
-    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$WIFIS;P:$KEEYSTRIP;$PSSK$H;"
     xdg-open "$QR_PNG"
   fi
 }
@@ -142,7 +142,7 @@ call_wifi_terminal() {
 
 terminal_qr() {
   call_wifi_pass
-  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
+  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEYSTRIP;$PSSK$H;"
   echo
 }
 
@@ -158,6 +158,7 @@ current_wifi_ssid() {
 call_wifi_pass() {
   SSID="$WIFIS"
   KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "$WIFIS")
+  KEEYSTRIP=$(echo "$KEEY" |  sed 's/[\\;,:"\]/\\&/g')
   PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "$WIFIS")
   HIDN=$(nmcli -g 802-11-wireless.hidden connection show "$WIFIS")
 
@@ -243,7 +244,7 @@ call_wifi_scan() {
     wifiqrcred+=([$(echo "$wifiqrdata" | awk -F';' '{print $3}' | cut -d":" -f1)]=$(echo "$wifiqrdata" | awk -F';' '{print $3}' | cut -d":" -f2))
 
     QSSID=${wifiqrcred[S]}
-    QKEES=${wifiqrcred[P]}
+    QKEES=$(echo "${wifiqrcred[P]}" | sed 's/\\\([\\;,:"\]\)/\1/g' )
     QTYPE=${wifiqrcred[T]}
 
 
@@ -335,7 +336,7 @@ call_wifi_scan_gui() {
       nmcli radio wifi off
       sleep 5
       scan_connect
-      if [ $connectn != 0 ]; then
+      if [[ $connectn != 0 ]]; then
         echo -e "${RED}==================${RESET}"
         echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
         echo -e "${RED}==================${RESET}"
@@ -358,6 +359,15 @@ call_wifi_scan_gui() {
       exit
     fi
   fi
+}
+
+call_file_select_and_scan_gui () {
+  img_path=$(zenity --file-selection)
+  if [ -z "$img_path" ]; then
+    echo "No file selected"
+    exit
+  fi
+  call_wifi_scan_gui "$img_path"
 }
 
 call_file_select_and_scan_gui () {
@@ -431,8 +441,9 @@ case $1 in
 			c for WiFi QR Create GUI
 			t for WiFi QR Create Terminal
 			s for QR Scan and Auto Connect WiFi
-			f Terminal [file] for QR Scan and Auto Connect WiFi from file
-			p With GUI [file] for QR Scan and Auto Connect WiFi from file
+			QR Scan and Auto Connect WiFi from file
+				f Terminal [file] 
+				p With GUI [file] 
 			q for QR Scan and Connect WiFi GUI
 			v for WiFi-QR Version is $VERSION
 		"
