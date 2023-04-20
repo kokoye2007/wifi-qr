@@ -101,7 +101,7 @@ call_qr_gui() {
 	  main_menu
   else
     #QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
-    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$WIFIS;P:$KEEYSTRIP;$PSSK$H;"
+    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
     xdg-open "$QR_PNG"
   fi
 }
@@ -129,28 +129,29 @@ call_wifi_terminal() {
   IFS=$OLD_IFS
 
   echo ""
-  echo -e "${BLUE}===========================================${RESET}"
+  echo -e "${BLUE}===============================================================${RESET}"
   echo -e "${BOLD}${WHITE}please choose WiFi ssid ${RESET}"
-  echo -e "${BLUE}===========================================${RESET}"
+  echo -e "${BLUE}===============================================================${RESET}"
   read -e -r wifissid
   WIFIS=${array[$wifissid]}
-  echo -e "${BLUE}===========================================${RESET}"
+  echo hello - $WIFIS
+  echo -e "${BLUE}===============================================================${RESET}"
   echo -e "\nYou choose SSID is: $WIFIS\n ${RESET}"
-  echo -e "${BLUE}===========================================${RESET}"
+  echo -e "${BLUE}===============================================================${RESET}"
   terminal_qr
 }
 
 terminal_qr() {
   call_wifi_pass
-  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEYSTRIP;$PSSK$H;"
+  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
   echo
 }
 
 current_wifi_ssid() {
   WIFIS="$(nmcli -t -f active,ssid dev wifi | grep -E '^yes' | cut -d':' -f2 | tr -d '\r\n')"
-  echo -e "${BLUE}===========================================${RESET}"
+  echo -e "${BLUE}===============================================================${RESET}"
   echo -e "\nYou current active SSID is:${BOLD}${RED} $WIFIS\n ${RESET}"
-  echo -e "${BLUE}===========================================${RESET}"
+  echo -e "${BLUE}===============================================================${RESET}"
 }
 
 
@@ -158,8 +159,7 @@ current_wifi_ssid() {
 call_wifi_pass() {
   SSID="$WIFIS"
   KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "$WIFIS")
-  KEEYSTRIP=$(echo "$KEEY" |  sed 's/[\\;,:"\]/\\&/g')
-  PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "$WIFIS")
+  PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "$WIFIS" | sed 's/[\\;,:"\]/\\&/g' )
   HIDN=$(nmcli -g 802-11-wireless.hidden connection show "$WIFIS")
 
   if [[ "$PSK" == *"wpa"* ]]; then
@@ -238,43 +238,64 @@ call_wifi_scan() {
     if echo "$wifiqrdata" | grep --quiet "H:true;"; then
     	QHIDE=true
     fi
-    declare -A wifiqrcred
-    wifiqrcred+=([$(echo "$wifiqrdata" | cut -b 6- | awk -F';' '{print $1}' | cut -d":" -f1)]=$(echo "$wifiqrdata" | cut -b 6- | awk -F';' '{print $1}' | cut -d":" -f2))
-    wifiqrcred+=([$(echo "$wifiqrdata" | awk -F';' '{print $2}' | cut -d":" -f1)]=$(echo "$wifiqrdata" | awk -F';' '{print $2}' | cut -d":" -f2))
-    wifiqrcred+=([$(echo "$wifiqrdata" | awk -F';' '{print $3}' | cut -d":" -f1)]=$(echo "$wifiqrdata" | awk -F';' '{print $3}' | cut -d":" -f2))
 
-    QSSID=${wifiqrcred[S]}
-    QKEES=$(echo "${wifiqrcred[P]}" | sed 's/\\\([\\;,:"\]\)/\1/g' )
-    QTYPE=${wifiqrcred[T]}
+	WIFIQRDATA="${wifiqrdata}"
+
+	# Extract the SSID
+	QSSID=$(echo "$WIFIQRDATA" | sed -n 's/.*S:\(.*\);T.*/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+
+	# Extract the security type
+	QTYPE=$(echo "$WIFIQRDATA" | sed -n 's/.*T:\(.*\);P.*/\1/p')
+
+	# Extract the password
+	if [[ $WIFIQRDATA == *';H:'* ]]; then
+	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);H:.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g'  )
+	else
+	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);;.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g' )
+	fi
+
+	# Check if the Wi-Fi network is hidden
+	if [[ $WIFIQRDATA == *';H:true'* ]]; then
+	  QHIDE="true"
+	else
+	  QHIDE="false"
+	fi
 
 
+	# Print the SSID, security type, password, and hidden attribute
+      echo -e "${GREEN}============================${RESET}"
+      echo -e "${BOLD}${BLUE} SSID: ${RESET} ${WHITE} $QSSID ${RESET}"
+      echo -e "${BOLD}${BLUE} TYPE: ${RESET} ${WHITE} $QTYPE ${RESET}"
+      echo -e "${BOLD}${BLUE} PASS: ${RESET} ${WHITE} $QKEES ${RESET}"
+      echo -e "${BOLD}${BLUE} PASS: ${RESET} ${WHITE} $QHIDE ${RESET}"
+      echo -e "${GREEN}============================${RESET}"
 
 
     if [[ "$QHIDE" == "true" ]]; then
-      echo -e "${GREEN}==================${RESET}"
+      echo -e "${GREEN}============================${RESET}"
       echo -e "${BOLD}${WHITE}It's is HIDDEN ${RESET}"
-      echo -e "${GREEN}==================${RESET}"
+      echo -e "${GREEN}============================${RESET}"
 
     elif nmcli device wifi list | grep -w "$QSSID"; then
-      echo -e "${GREEN}==================${RESET}"
+      echo -e "${GREEN}============================${RESET}"
       echo -e "${BOLD}${WHITE}$QSSID is Online ${RESET}"
-      echo -e "${GREEN}==================${RESET}"
+      echo -e "${GREEN}============================${RESET}"
       QSSIDO=ON
 
     else
-      echo -e "${RED}==================${RESET}"
+      echo -e "${RED}============================${RESET}"
       echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
-      echo -e "${RED}==================${RESET}"
+      echo -e "${RED}============================${RESET}"
       QSSIDO=OFF
     fi
 
   else
-    echo -e "${RED}==================${RESET}"
+    echo -e "${RED}============================${RESET}"
     echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
-    echo -e "${RED}==================${RESET}"
-    echo -e "${BLUE}==================${RESET}"
+    echo -e "${RED}============================${RESET}"
+    echo -e "${BLUE}============================${RESET}"
     echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
-    echo -e "${BLUE}==================${RESET}"
+    echo -e "${BLUE}============================${RESET}"
     QSSIDO=NOWIFI
   fi
 
@@ -290,9 +311,6 @@ call_wifi_scan() {
     echo "unknow or need to add key-mgmt type"
   fi
 
-
-  # Append scan results to file
-  #echo $wifiqrdata >> $ScanResult
 }
 
 
@@ -337,9 +355,9 @@ call_wifi_scan_gui() {
       sleep 5
       scan_connect
       if [[ $connectn != 0 ]]; then
-        echo -e "${RED}==================${RESET}"
+        echo -e "${RED}============================${RESET}"
         echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
-        echo -e "${RED}==================${RESET}"
+        echo -e "${RED}============================${RESET}"
         exit
       fi
     elif [[ "$CHOICE" =~ "Retry submitting another QR Code" ]]; then
@@ -431,21 +449,21 @@ case $1 in
   call_wifi_scan_gui "cam"
   ;;
 [Vv])
-   echo -e "${GREEN}==================${RESET}"
+   echo -e "${GREEN}============================${RESET}"
    echo -e "${BOLD}${WHITE} WiFI-QR v $VERSION ${RESET}"
-   echo -e "${GREEN}==================${RESET}"
+   echo -e "${GREEN}============================${RESET}"
   ;;
 *)
   echo -e "\nInvalid input\n
-	Please use	g for GUI Main Menu
-			c for WiFi QR Create GUI
-			t for WiFi QR Create Terminal
-			s for QR Scan and Auto Connect WiFi
-			QR Scan and Auto Connect WiFi from file
-				f Terminal [file] 
-				p With GUI [file] 
-			q for QR Scan and Connect WiFi GUI
-			v for WiFi-QR Version is $VERSION
+	Please use	g - for GUI Main Menu
+			c - for WiFi QR Create GUI
+			t - for WiFi QR Create Terminal
+			s - for QR Scan and Auto Connect WiFi
+			  - QR Scan and Auto Connect WiFi from file
+			f - Terminal [file] 
+			p - With GUI [file] 
+			q - for QR Scan and Connect WiFi GUI
+			v - for WiFi-QR Version is $VERSION
 		"
 	nmcli device wifi show-password
   ;;
