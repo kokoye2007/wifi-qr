@@ -132,6 +132,28 @@ mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | 
   terminal_qr
 }
 
+#WiFi Command from terminal with FZF
+call_wifi_terminal_fzf() {
+mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' | sed 's/\\\([\\;,:"\]\)/\1/g' )
+  OLD_IFS=$IFS
+  IFS=$'\n'
+  for l in "${wifilist[@]}"; do
+    array[$i]=$l
+    i=$((i + 1))
+  done
+  IFS=$OLD_IFS
+
+  wifissid=$(printf '%s\n' "${array[@]}" | fzf)
+
+  WIFIS="$wifissid"
+
+  echo -e "${BLUE}===============================================================${RESET}"
+  echo -e "\nYou choose SSID File is: $WIFIS\n ${RESET}"
+  echo -e "${BLUE}===============================================================${RESET}"
+  terminal_qr
+}
+
+
 terminal_qr() {
   call_wifi_pass
   qrencode -o - -t UTF8 "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
@@ -400,11 +422,12 @@ scan_connect_hidden() {
 
 usage() {
   echo ""
-  echo " Usage: $0 [-g] [-c] [-t] [-s] [-f file] [-p] [-q] [-v] [-h]"
+  echo " Usage: $0 [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q] [-v] [-h]"
   echo ""
   echo " -g	 Launch GUI Main Menu"
   echo " -c	 Launch WiFi QR Create GUI"
   echo " -t	 Launch WiFi QR Create Terminal"
+  echo " -z	 Launch WiFi QR Create Terminal Fuzzy Finder"
   echo " -s	 Launch QR Scan and Auto Connect WiFi"
   echo " -f file Terminal [file] QR Scan and Auto Connect WiFi from file"
   echo " -p 	 Launch GUI [file] QR Scan and Auto Connect WiFi from file"
@@ -432,7 +455,7 @@ if [[ $# -eq 0 ]] || [[ $1 != -* ]]; then
   exit 0
 fi
 
-while getopts ":gctsf:pqvh" opt; do
+while getopts ":gctszf:pqvh" opt; do
   case $opt in
     g)
       echo "Launching GUI Main Menu..."
@@ -449,6 +472,10 @@ while getopts ":gctsf:pqvh" opt; do
     s)
       echo "Launching QR Scan and Auto Connect WiFi..."
       call_wifi_scan_terminal "cam"
+      ;;
+    z)
+      echo "Launching WiFi QR Create Terminal Fuzzy Finder..."
+      call_wifi_terminal_fzf
       ;;
     f)
       check_file "$OPTARG"

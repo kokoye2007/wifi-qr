@@ -1,49 +1,14 @@
-﻿# Wifi QR
+﻿# Wifi QR 
 
-## WiFi Share and Connect with QR
+Hi everyone 
+i am think about Xiaomi Phone Wifi, Hotspot Share with QR, 
+also scan with auto connect to WIFI.
+now i did it, **wifi-qr**. 
+we can do like Xiaomi Phone.
+using zbarcam via zbar-tools and qrencode.
 
- Xiaomi Android phones has started using QR to use WiFi for sharing.
- The idea was to get started with Bash, from Android to PC or PC to
- Mobile, and use Interface for zenity, QR for zbar and qrencode,
- and nmcli from Network-Manager for Network. For security,
- you can use WPA, WPA2, WEP, Open and share with the Hidden Network.
- QR code does not support LDAP Network and VPN.
- Android can easily generate WiFi QR, iOS via Shortcuts apps.
-
-
-## Contributor
-
-@BT-mfasola - Arrary Redesign
-
-@i-need-to-tell-you-something - Grammer and Typo Fix
-
-@Pabs3 - Shellcheck Recommend
-
-@Baco - README update for sudo remove
-
-@naing2victor - Assistant
-
-@waiyanwinhtain - Tester and Bug Report
-
-@hosiet - Mentor and Sponsor for Debian
-
-@paddatrapper- Mentor and Sponsor for Debian
-
-@arnabsen1729 - QR Scan from File via CLI and GUI
-
-@sualk - Password with special characters needs to be unquoted
-
-@ls-1N - QR issue when the name and SSID differ. #15 #16 #17
-
-- Sorry for Code Clean, Rebase and force upload.
-
-## v0.2-3 SSID and PASS with special characters 
-- #12 #14 #15 #16 #17
-## v0.2-2 QR File Scan pull from @arnabsen1729
-- #10
-## v0.1-2 shellcheck pass for #9
 ## v0.1-1 is using bash reading replace with nmcli
-
+## v0.1-2 shellcheck pass for #9
 
 ## Generate WIFI QR
 it's easy, 
@@ -71,19 +36,16 @@ or using graphics menu
 - [x] QR Generate with GUI
 - [x] QR Generate with Terminal 
 - [x] QR Scan and Auto Connect
-- [x] QR Image File Scan and Auto Connect
 - [x] It's Not Wifi QR
 - [x] This network is not available. 
 - [x] Migration to nmcli
 - [x] QR Share Hidden Network
 - [x] QR Scan Auto Connect Hidden Network
 - [x] icons
-- [x] Password with special characters needs to be unquoted
-- [x] wifi config filename instad wifi ssid
 - [ ] Additional LDAP Login
-- [ ] bash and zsh autocomplete for wifi-qr 
 
 ###  Improve
+ All is done
  Just need for LDAP and LEAP
  We will come back when QR Code and Scanner support LDAP and relative thing.
  
@@ -98,24 +60,22 @@ nmcli con up <connect name>
 ## UML diagrams
 
 WIFI QR UML.
-
 ```mermaid
 graph TD
-T{Terminal / GUI}
-S[QR Scan]
-W[WebCam]
-F[File]
-Q[QR Create]
-SSID[WIFI SSID]
-PNG[QR and PNG FILE]
-SSID_LIST{WIFI SSID LIST}
 
 
-T --> S
-S --> W --> SSID
-S --> F --> SSID
 
-
-T --> Q
-Q --> SSID_LIST --> PNG
+G[GUI] --> A{Main Menu}
+A -- QR Connect --> Q[Scan Show Info and Connect]
+T[Terminal Command] -- wifi-qr g--> G
+T -- wifi-qr s--> S[Scan and Auto Connect]
+T -- wifi-qr q--> Q
+S --> C[Wifi Connect]
+Q --> C
+A -- QR Generate --> F{Wifi SSID}
+T -- wifi-qr t--> F
+F --> QR[Wifi QR Code]
+Q -.-> WIFIN[Its Wifi QR]
+WIFIA[This SSID is Available]-.->Q
 ```
+

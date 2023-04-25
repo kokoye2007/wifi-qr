@@ -3,4 +3,3 @@ opts="searchmode=plain,\
 	pgpmode=auto" \
 https://api.github.com/repos/kokoye2007/@PACKAGE@/releases?per_page=50 \
 https://api.github.com/repos/[^/]+/[^/]+/tarball/v?@ANY_VERSION@
-

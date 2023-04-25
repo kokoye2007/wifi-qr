@@ -1,0 +1,529 @@
+Description: Version 0.2-3 update
+ wifi-qr (0.2-3) unstable; urgency=medium
+ .
+   * #12 Password with special characters needs to be unquoted.
+   * #17 QR issue when the name and SSID differ.
+   * #16 QR issue when the password has special characters.
+   * #15 QR issue when the SSID has special characters.
+   * #12 Password with special characters needs to be unquoted.
+Author: kokoye2007 <kokoye2007@gmail.com>
+
+---
+Origin: upstream, https://github.com/kokoye2007/wifi-qr
+Forwarded: not-needed
+Reviewed-By: kokoye2007 <kokoye2007@gmail.com>
+Last-Update: 2023-04-25
+
+--- wifi-qr-0.2.orig/wifi-qr
++++ wifi-qr-0.2/wifi-qr
+@@ -5,6 +5,7 @@
+ # Idea from Xaomi
+ # Ko Ko Ye <kokoye2007@gmail.com>
+ # Ubuntu Myanmar LoCo Team
++# https://github.com/kokoye2007/wifi-qr
+ 
+ WIFIS=''
+ SSID=''
+@@ -19,14 +20,7 @@ GREEN=$(tput setaf 2)
+ BLUE=$(tput setaf 4)
+ RESET=$(tput sgr0)
+ BOLD=$(tput bold)
+-VERSION=0.2
+-
+-## NMCLI no need SUDO ## 0.1.1
+-#Check root or sudo
+-#if [ "$(id -u)" != "0" ]; then
+-#  echo "This script must be run as root" 1>&2
+-#  exit 1
+-#fi
++VERSION=0.2-3
+ 
+ #RAW DATA SAMPLE
+ #"WIFI:S:$SSID;P:$PASSWORD;T:$KEY_TYPE;H:$true;"
+@@ -77,8 +71,7 @@ main_menu() {
+ 
+ #GUI
+ call_wifi_gui() {
+-#  IFS=$'\r\n' GLOBIGNORE='*' command eval 'wifilist=($(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | cut -f1 -d:))'
+-  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | cut -f1 -d:)
++mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+ 
+   WIFIS=$(zenity --list --column="SSID" \
+ 	  --width=300 --height=600 \
+@@ -100,11 +93,12 @@ call_qr_gui() {
+   if [[ -z "$QR_PNG" ]]; then
+ 	  main_menu
+   else
+-    #QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
+-    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
++    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
++
+     xdg-open "$QR_PNG"
+   fi
+ }
++
+ call_current_wifi_gui() {
+   current_wifi_ssid
+   call_qr_gui
+@@ -112,8 +106,7 @@ call_current_wifi_gui() {
+ 
+ #WiFi Command from terminal
+ call_wifi_terminal() {
+-#  IFS=$'\r\n' GLOBIGNORE='*' command eval  'wifilist=($(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | cut -f1 -d":"))'
+-  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | cut -f1 -d:)
++mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' )
+   OLD_IFS=$IFS
+   IFS=$'\n'
+   for l in "${wifilist[@]}"; do
+@@ -127,39 +120,61 @@ call_wifi_terminal() {
+     echo "$((i++))) $(basename "$m")"
+   done
+   IFS=$OLD_IFS
+-
+   echo ""
+-  echo -e "${BLUE}===========================================${RESET}"
++  echo -e "${BLUE}===============================================================${RESET}"
+   echo -e "${BOLD}${WHITE}please choose WiFi ssid ${RESET}"
+-  echo -e "${BLUE}===========================================${RESET}"
++  echo -e "${BLUE}===============================================================${RESET}"
+   read -e -r wifissid
+-  WIFIS=${array[$wifissid]}
+-  echo -e "${BLUE}===========================================${RESET}"
+-  echo -e "\nYou choose SSID is: $WIFIS\n ${RESET}"
+-  echo -e "${BLUE}===========================================${RESET}"
++  WIFIS="${array[$wifissid]}"
++  echo -e "${BLUE}===============================================================${RESET}"
++  echo -e "\nYou choose SSID File is: $WIFIS\n ${RESET}"
++  echo -e "${BLUE}===============================================================${RESET}"
++  terminal_qr
++}
++
++#WiFi Command from terminal with FZF
++call_wifi_terminal_fzf() {
++mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' | sed 's/\\\([\\;,:"\]\)/\1/g' )
++  OLD_IFS=$IFS
++  IFS=$'\n'
++  for l in "${wifilist[@]}"; do
++    array[$i]=$l
++    i=$((i + 1))
++  done
++  IFS=$OLD_IFS
++
++  wifissid=$(printf '%s\n' "${array[@]}" | fzf)
++
++  WIFIS="$wifissid"
++
++  echo -e "${BLUE}===============================================================${RESET}"
++  echo -e "\nYou choose SSID File is: $WIFIS\n ${RESET}"
++  echo -e "${BLUE}===============================================================${RESET}"
+   terminal_qr
+ }
+ 
++
+ terminal_qr() {
+   call_wifi_pass
+-  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
++  qrencode -o - -t UTF8 "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
+   echo
+ }
+ 
+ current_wifi_ssid() {
+-  WIFIS="$(nmcli -t -f active,ssid dev wifi | grep -E '^yes' | cut -d':' -f2 | tr -d '\r\n')"
+-  echo -e "${BLUE}===========================================${RESET}"
++  WIFIS="$(nmcli -t -f active,ssid dev wifi | grep -E '^yes' | cut -d':' -f2- | tr -d '\r\n')"
++  echo -e "${BLUE}===============================================================${RESET}"
+   echo -e "\nYou current active SSID is:${BOLD}${RED} $WIFIS\n ${RESET}"
+-  echo -e "${BLUE}===========================================${RESET}"
++  echo -e "${BLUE}===============================================================${RESET}"
+ }
+ 
+ 
+ #Data Extractor nmcli version
+ call_wifi_pass() {
+-  SSID="$WIFIS"
+-  KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "$WIFIS")
+-  PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "$WIFIS")
+-  HIDN=$(nmcli -g 802-11-wireless.hidden connection show "$WIFIS")
++  WIFIS=$(echo "${WIFIS}" | sed 's/\\\([\\;,:"\]\)/\1/g' )
++  SSID=$(nmcli -g 802-11-wireless.ssid connection show "${WIFIS}" | sed 's/[;,"]/\\&/g' )
++  KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "${WIFIS}" | sed 's/[;,"]/\\&/g')
++  PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "${WIFIS}" )
++  HIDN=$(nmcli -g 802-11-wireless.hidden connection show "${WIFIS}")
+ 
+   if [[ "$PSK" == *"wpa"* ]]; then
+     PSSK="T:WPA;"
+@@ -175,8 +190,10 @@ call_wifi_pass() {
+   fi
+   echo -e "${GREEN}"
+   echo ""
+-  echo "SSID:    $SSID"
+-  echo "PASS:    $KEEY"
++  # echo "SSID:    $SSID"
++  echo "SSID:    $SSID" | sed 's/\\\([\\;,:"\]\)/\1/g'
++  # echo "PASS:    $KEEY"
++  echo "PASS:    $KEEY" | sed 's/\\\([\\;,:"\]\)/\1/g'
+   echo "TYPE:    $PSSK"
+   echo "HIDE:    $H"
+   echo ""
+@@ -237,43 +254,64 @@ call_wifi_scan() {
+     if echo "$wifiqrdata" | grep --quiet "H:true;"; then
+     	QHIDE=true
+     fi
+-    declare -A wifiqrcred
+-    wifiqrcred+=([$(echo "$wifiqrdata" | cut -b 6- | awk -F';' '{print $1}' | cut -d":" -f1)]=$(echo "$wifiqrdata" | cut -b 6- | awk -F';' '{print $1}' | cut -d":" -f2))
+-    wifiqrcred+=([$(echo "$wifiqrdata" | awk -F';' '{print $2}' | cut -d":" -f1)]=$(echo "$wifiqrdata" | awk -F';' '{print $2}' | cut -d":" -f2))
+-    wifiqrcred+=([$(echo "$wifiqrdata" | awk -F';' '{print $3}' | cut -d":" -f1)]=$(echo "$wifiqrdata" | awk -F';' '{print $3}' | cut -d":" -f2))
+-
+-    QSSID=${wifiqrcred[S]}
+-    QKEES=${wifiqrcred[P]}
+-    QTYPE=${wifiqrcred[T]}
+ 
++	WIFIQRDATA="${wifiqrdata}"
+ 
++	# Extract the SSID
++	QSSID=$(echo "$WIFIQRDATA" | sed -n 's/.*S:\(.*\);T.*/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
++
++	# Extract the security type
++	QTYPE=$(echo "$WIFIQRDATA" | sed -n 's/.*T:\(.*\);P.*/\1/p')
++
++	# Extract the password
++	if [[ $WIFIQRDATA == *';H:'* ]]; then
++	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);H:.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g'  )
++	else
++	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);;.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g' )
++	fi
++
++	# Check if the Wi-Fi network is hidden
++	if [[ $WIFIQRDATA == *';H:true'* ]]; then
++	  QHIDE="true"
++	else
++	  QHIDE="false"
++	fi
++
++
++	# Print the SSID, security type, password, and hidden attribute
++      echo -e "${GREEN}============================${RESET}"
++      echo -e "${BOLD}${BLUE} SSID: ${RESET} ${WHITE} $QSSID ${RESET}"
++      echo -e "${BOLD}${BLUE} TYPE: ${RESET} ${WHITE} $QTYPE ${RESET}"
++      echo -e "${BOLD}${BLUE} PASS: ${RESET} ${WHITE} $QKEES ${RESET}"
++      echo -e "${BOLD}${BLUE} HIDE: ${RESET} ${WHITE} $QHIDE ${RESET}"
++      echo -e "${GREEN}============================${RESET}"
+ 
+ 
+     if [[ "$QHIDE" == "true" ]]; then
+-      echo -e "${GREEN}==================${RESET}"
++      echo -e "${GREEN}============================${RESET}"
+       echo -e "${BOLD}${WHITE}It's is HIDDEN ${RESET}"
+-      echo -e "${GREEN}==================${RESET}"
++      echo -e "${GREEN}============================${RESET}"
+ 
+     elif nmcli device wifi list | grep -w "$QSSID"; then
+-      echo -e "${GREEN}==================${RESET}"
++      echo -e "${GREEN}============================${RESET}"
+       echo -e "${BOLD}${WHITE}$QSSID is Online ${RESET}"
+-      echo -e "${GREEN}==================${RESET}"
++      echo -e "${GREEN}============================${RESET}"
+       QSSIDO=ON
+ 
+     else
+-      echo -e "${RED}==================${RESET}"
++      echo -e "${RED}============================${RESET}"
+       echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
+-      echo -e "${RED}==================${RESET}"
++      echo -e "${RED}============================${RESET}"
+       QSSIDO=OFF
+     fi
+ 
+   else
+-    echo -e "${RED}==================${RESET}"
++    echo -e "${RED}============================${RESET}"
+     echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
+-    echo -e "${RED}==================${RESET}"
+-    echo -e "${BLUE}==================${RESET}"
++    echo -e "${RED}============================${RESET}"
++    echo -e "${BLUE}============================${RESET}"
+     echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
+-    echo -e "${BLUE}==================${RESET}"
++    echo -e "${BLUE}============================${RESET}"
+     QSSIDO=NOWIFI
+   fi
+ 
+@@ -289,9 +327,6 @@ call_wifi_scan() {
+     echo "unknow or need to add key-mgmt type"
+   fi
+ 
+-
+-  # Append scan results to file
+-  #echo $wifiqrdata >> $ScanResult
+ }
+ 
+ 
+@@ -335,10 +370,10 @@ call_wifi_scan_gui() {
+       nmcli radio wifi off
+       sleep 5
+       scan_connect
+-      if [ $connectn != 0 ]; then
+-        echo -e "${RED}==================${RESET}"
++      if [[ $connectn != 0 ]]; then
++        echo -e "${RED}============================${RESET}"
+         echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
+-        echo -e "${RED}==================${RESET}"
++        echo -e "${RED}============================${RESET}"
+         exit
+       fi
+     elif [[ "$CHOICE" =~ "Retry submitting another QR Code" ]]; then
+@@ -385,57 +420,96 @@ scan_connect_hidden() {
+   nmcli con up "$QSSID" >/dev/null 2>&1
+ }
+ 
+-case $1 in
++usage() {
++  echo ""
++  echo " Usage: $0 [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q] [-v] [-h]"
++  echo ""
++  echo " -g	 Launch GUI Main Menu"
++  echo " -c	 Launch WiFi QR Create GUI"
++  echo " -t	 Launch WiFi QR Create Terminal"
++  echo " -z	 Launch WiFi QR Create Terminal Fuzzy Finder"
++  echo " -s	 Launch QR Scan and Auto Connect WiFi"
++  echo " -f file Terminal [file] QR Scan and Auto Connect WiFi from file"
++  echo " -p 	 Launch GUI [file] QR Scan and Auto Connect WiFi from file"
++  echo " -q	 Launch QR Scan and Connect WiFi GUI"
++  echo " -v	 Show WiFi-QR Version $VERSION"
++  echo " -h	 Show this help message"
++  echo ""
++}
+ 
+-[Tt])
+-  echo "start using wifi to qr"
+-  call_wifi_terminal
+-  ;;
+-[Cc])
+-  echo "start using wifi to qr"
+-  call_wifi_gui
+-  ;;
+-[Gg])
+-  echo "go go gui"
+-  main_menu
+-  ;;
+-[Ss])
+-  echo "qr scan"
+-  call_wifi_scan_terminal "cam"
+-  ;;
+-[Ff])
+-  if [ -f "$2" ]; then
+-    echo "qr scan from file $2"
+-    call_wifi_scan_terminal "$2"
+-  else
+-    echo "File not found"
+-    exit
+-  fi
+-  ;;
+-[Pp])
+-  echo "qr scan from file with gui"
+-  call_file_select_and_scan_gui
+-  ;;
+-[Qq])
+-  echo "qr scan with gui"
+-  call_wifi_scan_gui "cam"
+-  ;;
+-[Vv])
+-   echo -e "${GREEN}==================${RESET}"
+-   echo -e "${BOLD}${WHITE} WiFI-QR v $VERSION ${RESET}"
+-   echo -e "${GREEN}==================${RESET}"
+-  ;;
+-*)
+-  echo -e "\nInvalid input\n
+-	Please use	g for GUI Main Menu
+-			c for WiFi QR Create GUI
+-			t for WiFi QR Create Terminal
+-			s for QR Scan and Auto Connect WiFi
+-			f Terminal [file] for QR Scan and Auto Connect WiFi from file
+-			p With GUI [file] for QR Scan and Auto Connect WiFi from file
+-			q for QR Scan and Connect WiFi GUI
+-			v for WiFi-QR Version is $VERSION
+-		"
+-	nmcli device wifi show-password
+-  ;;
+-esac
++check_file() {
++  if [ ! -f "$1" ]; then
++    echo "Error: $1 is not a file."
++    exit 1
++  fi
++
++  file_type=$(file -b --mime-type "$1")
++  if [ "$file_type" != "image/png" ] && [ "$file_type" != "image/jpeg" ]; then
++    echo "Error: $1 is not an image file."
++    exit 1
++  fi
++}
++
++if [[ $# -eq 0 ]] || [[ $1 != -* ]]; then
++  usage
++  exit 0
++fi
++
++while getopts ":gctszf:pqvh" opt; do
++  case $opt in
++    g)
++      echo "Launching GUI Main Menu..."
++      main_menu
++      ;;
++    c)
++      echo "Launching WiFi QR Create GUI..."
++      call_wifi_gui
++      ;;
++    t)
++      echo "Launching WiFi QR Create Terminal..."
++      call_wifi_terminal
++      ;;
++    s)
++      echo "Launching QR Scan and Auto Connect WiFi..."
++      call_wifi_scan_terminal "cam"
++      ;;
++    z)
++      echo "Launching WiFi QR Create Terminal Fuzzy Finder..."
++      call_wifi_terminal_fzf
++      ;;
++    f)
++      check_file "$OPTARG"
++      echo "Launching Terminal [file] QR Scan and Auto Connect WiFi from file: $OPTARG"
++      call_wifi_scan_terminal "$2"
++      ;;
++    p)
++      echo "Launching GUI [file] QR Scan and Auto Connect WiFi from file"
++      call_file_select_and_scan_gui
++      ;;
++    q)
++      echo "Launching QR Scan and Connect WiFi GUI..."
++      call_wifi_scan_gui "cam"
++      ;;
++    v)
++      echo -e "${GREEN}============================${RESET}"
++      echo -e "${BOLD}${WHITE}	WiFI-QR $VERSION ${RESET}"
++      echo -e "${GREEN}============================${RESET}"
++      ;;
++    h)
++      usage
++      nmcli device wifi show-password
++      exit 0
++      ;;
++    \?)
++      echo "Invalid option: -$OPTARG" >&2
++      exit 1
++      ;;
++    :)
++      echo "Option -$OPTARG requires an argument." >&2
++      exit 1
++      ;;
++    *)
++      usage
++      exit 0
++  esac
++done
+--- wifi-qr-0.2.orig/wifi-qr.1
++++ wifi-qr-0.2/wifi-qr.1
+@@ -2,45 +2,51 @@
+ .SH NAME
+ wifi-qr \-  WiFi Share and Connect with QR
+ .SH SYNOPSIS
+-.B wifi-qr
+-.RI [ Gg | Cc | Tt | Ss | Ff | Pp | Qq | Vv ]  
++.B wifi-qr [  -g  |  -c  |  -t  |  -s  | -z |  -f  <file> |  -p  |  -q  |  -v  |  -h  ]
+ .br
+ .SH DESCRIPTION
+- PC to Android Network SSID Password share with QR code.
+- Idea from Xiaomi Android WiFi Password share with QR
+- Its just bash script and qrencode only.
+- now support also QR Scan with connect to WIFI.
+- Make to easy and happy.
++ WiFi password share via QR codes
++ Shares WiFi SSID and password via a QR code.
++ Generate a QR code of a WiFi network with its password.
++ Scan QR codes and easily connect to WiFi Networks.
++
++ For Android, OS version 10 and above is supported.
++ For iOS, the Shortcuts app supports generating WiFi QR codes.
+ .sp
+ 
+ .PP
+ .SH OPTIONS
+ wifi-qr option  
+ .TP
+-.B g 	GUI Main Menu 
++.B -g 	GUI Main Menu 
+ .br
+ .TP
+-.B c 	WiFi QR Create GUI
++.B -c 	WiFi QR Create GUI
+ .br
+ .TP
+-.B t 	WiFi QR Create Terminal
++.B -t 	WiFi QR Create Terminal
+ .br
+ .TP
+-.B s 	QR Scan and Auto Connect WiFi
++.B -z 	WiFi QR Create Terminal Fuzzy Finder
+ .br
+ .TP
+-.B f 	Terminal - QR File Scan and Auto Connect WiFi
++.B -s 	QR Scan and Auto Connect WiFi
+ .br
+ .TP
+-.B p 	With Gui - QR File Scan and Auto Connect WiFi
++.B -f	Terminal - QR File Scan and Auto Connect WiFi
+ .br
+ .TP
+-.B q 	QR Scan and Connect WiFi GUI
++.B -p 	With Gui - QR File Scan and Auto Connect WiFi
+ .br
+ .TP
+-.B v 	WiFi-QR Version is 0.1.1
++.B -q 	QR Scan and Connect WiFi GUI
++.br
++.TP
++.B -v 	WiFi-QR Version is 0.1.1
++.br
++.TP
++.B -h 	WiFi-QR Help
+ .br
+-
+ 
+ .SH BUGS
+ If there are any, please notify the author at the address below.
+--- wifi-qr-0.2.orig/wifi-qr.desktop
++++ wifi-qr-0.2/wifi-qr.desktop
+@@ -2,25 +2,26 @@
+ Type=Application
+ Version=0.1
+ Name=WiFi QR
++GenericName=WiFi QR
+ Comment=Wifi share with QR Code
+-Exec=sh -c 'wifi-qr g'
++Exec=sh -c 'wifi-qr -g'
+ Icon=wifi-qr.svg
+-Keywords="QR; WiFi; Password; Share;"
++Keywords=qr;wifi;password;share;
+ Terminal=false
+-Categories=GNOME;Utility;
++Categories=Utility;Accessibility;
+ Actions=ScanQR;ScanFileQR;CreateQR;
+ 
+ [Desktop Action ScanQR]
+ Name=Scan WiFi QR Code
+-Exec=sh -c 'wifi-qr q'
++Exec=sh -c 'wifi-qr -q'
+ Terminal=false
+ 
+ [Desktop Action ScanFileQR]
+ Name=Scan WiFi QR Code File
+-Exec=sh -c 'wifi-qr p'
++Exec=sh -c 'wifi-qr -p'
+ Terminal=false
+ 
+ [Desktop Action CreateQR]
+ Name=Create WiFi QR Code
+-Exec=sh -c 'wifi-qr c'
++Exec=sh -c 'wifi-qr -c'
+ Terminal=false
