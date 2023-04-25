@@ -81,9 +81,9 @@ or using graphics menu
 - [x] Password with special characters needs to be unquoted
 - [x] wifi config filename instad wifi ssid
 - [ ] Additional LDAP Login
+- [ ] bash and zsh autocomplete for wifi-qr 
 
 ###  Improve
- All is done
  Just need for LDAP and LEAP
  We will come back when QR Code and Scanner support LDAP and relative thing.
  
