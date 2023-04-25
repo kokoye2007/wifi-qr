@@ -31,6 +31,8 @@
 
 @sualk - Password with special characters needs to be unquoted
 
+@ls-1N - SSID vs Config File Name.
+
 - Sorry for Code Clean, Rebase and force upload.
 
 ## v0.1-1 is using bash reading replace with nmcli
