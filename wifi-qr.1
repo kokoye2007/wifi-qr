@@ -3,44 +3,48 @@
 wifi-qr \-  WiFi Share and Connect with QR
 .SH SYNOPSIS
 .B wifi-qr
-.RI [ Gg | Cc | Tt | Ss | Ff | Pp | Qq | Vv ]
+.R [  -g  |  -c  |  -t  |  -s  |  -f  <file> |  -p  |  -q  |  -v  |  -h  ]
 .br
 .SH DESCRIPTION
- PC to Android Network SSID Password share with QR code.
- Idea from Xiaomi Android WiFi Password share with QR
- Its just bash script and qrencode only.
- now support also QR Scan with connect to WIFI.
- Make to easy and happy.
+ WiFi password share via QR codes
+ Shares WiFi SSID and password via a QR code.
+ Generate a QR code of a WiFi network with its password.
+ Scan QR codes and easily connect to WiFi Networks.
+
+ For Android, OS version 10 and above is supported.
+ For iOS, the Shortcuts app supports generating WiFi QR codes.
 .sp
 
 .PP
 .SH OPTIONS
 wifi-qr option  
 .TP
-.B g 	GUI Main Menu 
+.B -g 	GUI Main Menu 
 .br
 .TP
-.B c 	WiFi QR Create GUI
+.B -c 	WiFi QR Create GUI
 .br
 .TP
-.B t 	WiFi QR Create Terminal
+.B -t 	WiFi QR Create Terminal
 .br
 .TP
-.B s 	QR Scan and Auto Connect WiFi
+.B -s 	QR Scan and Auto Connect WiFi
 .br
 .TP
-.B f 	Terminal - QR File Scan and Auto Connect WiFi
+.B -f	Terminal - QR File Scan and Auto Connect WiFi
 .br
 .TP
-.B p 	With Gui - QR File Scan and Auto Connect WiFi
+.B -p 	With Gui - QR File Scan and Auto Connect WiFi
 .br
 .TP
-.B q 	QR Scan and Connect WiFi GUI
+.B -q 	QR Scan and Connect WiFi GUI
 .br
 .TP
-.B v 	WiFi-QR Version is 0.1.1
+.B -v 	WiFi-QR Version is 0.1.1
 .br
-
+.TP
+.B -h 	WiFi-QR Help
+.br
 
 .SH BUGS
 If there are any, please notify the author at the address below.

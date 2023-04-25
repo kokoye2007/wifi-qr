@@ -72,6 +72,7 @@ or using graphics menu
 - [x] QR Scan Auto Connect Hidden Network
 - [x] icons
 - [x] Password with special characters needs to be unquoted
+- [x] wifi config filename instad wifi ssid
 - [ ] Additional LDAP Login
 
 ###  Improve

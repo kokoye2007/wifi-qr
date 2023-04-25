@@ -4,7 +4,7 @@ Version=0.1
 Name=WiFi QR
 GenericName=WiFi QR
 Comment=Wifi share with QR Code
-Exec=sh -c 'wifi-qr g'
+Exec=sh -c 'wifi-qr -g'
 Icon=wifi-qr.svg
 Keywords=qr;wifi;password;share;
 Terminal=false
@@ -13,15 +13,15 @@ Actions=ScanQR;ScanFileQR;CreateQR;
 
 [Desktop Action ScanQR]
 Name=Scan WiFi QR Code
-Exec=sh -c 'wifi-qr q'
+Exec=sh -c 'wifi-qr -q'
 Terminal=false
 
 [Desktop Action ScanFileQR]
 Name=Scan WiFi QR Code File
-Exec=sh -c 'wifi-qr p'
+Exec=sh -c 'wifi-qr -p'
 Terminal=false
 
 [Desktop Action CreateQR]
 Name=Create WiFi QR Code
-Exec=sh -c 'wifi-qr c'
+Exec=sh -c 'wifi-qr -c'
 Terminal=false
