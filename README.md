@@ -33,10 +33,17 @@
 
 @sualk - Password with special characters needs to be unquoted
 
+@ls-1N - QR issue when the name and SSID differ. #15 #16 #17
+
 - Sorry for Code Clean, Rebase and force upload.
 
-## v0.1-1 is using bash reading replace with nmcli
+## v0.2-3 SSID and PASS with special characters 
+- #12 #14 #15 #16 #17
+## v0.2-2 QR File Scan pull from @arnabsen1729
+- #10
 ## v0.1-2 shellcheck pass for #9
+## v0.1-1 is using bash reading replace with nmcli
+
 
 ## Generate WIFI QR
 it's easy, 
