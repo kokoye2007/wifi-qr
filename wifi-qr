@@ -71,7 +71,6 @@ main_menu() {
 
 #GUI
 call_wifi_gui() {
-# mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/\\\([\\;,:"\]\)/\1/g' )
 mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
 
   WIFIS=$(zenity --list --column="SSID" \
@@ -94,10 +93,6 @@ call_qr_gui() {
   if [[ -z "$QR_PNG" ]]; then
 	  main_menu
   else
-#    QR_PNG="/tmp/wifi-qr-$(echo $WIFIS | tr -dc '[:alnum:]').png"
-#    WIFIS=$(echo $WIFIS | sed 's/\\\([\\;,:"\]\)/\1/g' )
-#    qrencode -o - -t UTF8 "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
-#    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
     qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
 
     xdg-open "$QR_PNG"
@@ -130,7 +125,6 @@ mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | 
   echo -e "${BOLD}${WHITE}please choose WiFi ssid ${RESET}"
   echo -e "${BLUE}===============================================================${RESET}"
   read -e -r wifissid
-#  WIFIS=$(echo "${array[$wifissid]}" | sed 's/\\\([\\;,:"\]\)/\1/g' )
   WIFIS="${array[$wifissid]}"
   echo -e "${BLUE}===============================================================${RESET}"
   echo -e "\nYou choose SSID File is: $WIFIS\n ${RESET}"
@@ -140,7 +134,6 @@ mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | 
 
 terminal_qr() {
   call_wifi_pass
-#  qrencode -o - -t UTF8 "WIFI:S:$WIFIS;P:$KEEY;$PSSK$H;"
   qrencode -o - -t UTF8 "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
   echo
 }
@@ -493,60 +486,3 @@ while getopts ":gctsf:pqvh" opt; do
       exit 0
   esac
 done
-
-
-# case $1 in
-#
-# [Tt])
-#   echo "start using wifi to qr"
-#   call_wifi_terminal
-#   ;;
-# [Cc])
-#   echo "start using wifi to qr"
-#   call_wifi_gui
-#   ;;
-# [Gg])
-#   echo "go go gui"
-#   main_menu
-#   ;;
-# [Ss])
-#   echo "qr scan"
-#   call_wifi_scan_terminal "cam"
-#   ;;
-# [Ff])
-#   if [ -f "$2" ]; then
-#     echo "qr scan from file $2"
-#     call_wifi_scan_terminal "$2"
-#   else
-#     echo "File not found"
-#     exit
-#   fi
-#   ;;
-# [Pp])
-#   echo "qr scan from file with gui"
-#   call_file_select_and_scan_gui
-#   ;;
-# [Qq])
-#   echo "qr scan with gui"
-#   call_wifi_scan_gui "cam"
-#   ;;
-# [Vv])
-#    echo -e "${GREEN}============================${RESET}"
-#    echo -e "${BOLD}${WHITE} WiFI-QR v $VERSION ${RESET}"
-#    echo -e "${GREEN}============================${RESET}"
-#   ;;
-# *)
-#   echo -e "\nInvalid input\n
-# 	Please use	g - for GUI Main Menu
-# 			c - for WiFi QR Create GUI
-# 			t - for WiFi QR Create Terminal
-# 			s - for QR Scan and Auto Connect WiFi
-# 			  - QR Scan and Auto Connect WiFi from file
-# 			f - Terminal [file]
-# 			p - With GUI [file]
-# 			q - for QR Scan and Connect WiFi GUI
-# 			v - for WiFi-QR Version is $VERSION
-# 		"
-# 	nmcli device wifi show-password
-#   ;;
-# esac
