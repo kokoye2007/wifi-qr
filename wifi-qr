@@ -258,16 +258,16 @@ call_wifi_scan() {
 	WIFIQRDATA="${wifiqrdata}"
 
 	# Extract the SSID
-	QSSID=$(echo "$WIFIQRDATA" | sed -n 's/.*S:\(.*\);T.*/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+	QSSID=$(echo "$WIFIQRDATA" | sed -n 's/.*S:\([^;]*\)\(;[PHT]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
 
 	# Extract the security type
-	QTYPE=$(echo "$WIFIQRDATA" | sed -n 's/.*T:\(.*\);P.*/\1/p')
+	QTYPE=$(echo "$WIFIQRDATA" | sed -n 's/.*T:\([^;]*\)\(;[PHS]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
 
 	# Extract the password
 	if [[ $WIFIQRDATA == *';H:'* ]]; then
-	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);H:.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g'  )
+	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*P:\([^;]*\)\(;[TSH]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
 	else
-	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);;.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g' )
+	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*P:\([^;]*\)\(;[TS]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
 	fi
 
 	# Check if the Wi-Fi network is hidden
