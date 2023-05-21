@@ -1,6 +1,11 @@
+wifi-qr (0.2-3+18) unstable; urgency=medium
+
+  * #18 Xiaomi QR code is parsed incorrectly.
+
+ -- kokoye2007 <kokoye2007@gmail.com>  Mon, 22 May 2023 04:32:35 +1000
+
 wifi-qr (0.2-3) unstable; urgency=medium
 
-  * #12 Password with special characters needs to be unquoted.
   * #17 QR issue when the name and SSID differ.
   * #16 QR issue when the password has special characters.
   * #15 QR issue when the SSID has special characters.
