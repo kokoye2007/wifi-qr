@@ -1,0 +1,52 @@
+Description: <short summary of the patch>
+ TODO: Put a short summary on the line above and replace this paragraph
+ with a longer explanation of this change. Complete the meta-information
+ with other relevant fields (see below for details). To make it easier, the
+ information below has been extracted from the changelog. Adjust it or drop
+ it.
+ .
+ wifi-qr (0.2-3) unstable; urgency=medium
+ .
+   * #18 Xiaomi QR code is parsed incorrectly.
+   * #17 QR issue when the name and SSID differ.
+   * #16 QR issue when the password has special characters.
+   * #15 QR issue when the SSID has special characters.
+   * #12 Password with special characters needs to be unquoted.
+Author: kokoye2007 <kokoye2007@gmail.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: 2023-05-21
+
+--- wifi-qr-0.2.orig/wifi-qr
++++ wifi-qr-0.2/wifi-qr
+@@ -258,16 +258,16 @@ call_wifi_scan() {
+ 	WIFIQRDATA="${wifiqrdata}"
+ 
+ 	# Extract the SSID
+-	QSSID=$(echo "$WIFIQRDATA" | sed -n 's/.*S:\(.*\);T.*/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
++	QSSID=$(echo "$WIFIQRDATA" | sed -n 's/.*S:\([^;]*\)\(;[PHT]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+ 
+ 	# Extract the security type
+-	QTYPE=$(echo "$WIFIQRDATA" | sed -n 's/.*T:\(.*\);P.*/\1/p')
++	QTYPE=$(echo "$WIFIQRDATA" | sed -n 's/.*T:\([^;]*\)\(;[PHS]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+ 
+ 	# Extract the password
+ 	if [[ $WIFIQRDATA == *';H:'* ]]; then
+-	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);H:.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g'  )
++	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*P:\([^;]*\)\(;[TSH]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+ 	else
+-	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*;P:\(.*\);;.*/\1/p' | sed 's/\\:/:/g' | sed 's/\\\([\\;,:"\]\)/\1/g' )
++	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*P:\([^;]*\)\(;[TS]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+ 	fi
+ 
+ 	# Check if the Wi-Fi network is hidden
