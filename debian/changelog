@@ -1,4 +1,4 @@
-wifi-qr (0.3) unstable; urgency=medium
+wifi-qr (0.3-1) unstable; urgency=medium
 
   * New upstream release (0.3).
   * #18 Xiaomi QR code is parsed incorrectly.
