@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: kokoye2007 <kokoye2007@gmail.com>
 Build-Depends: debhelper-compat (= 13)
 Rules-Requires-Root: no
-Standards-Version: 4.6.0.1
+Standards-Version: 4.6.2
 Homepage: https://github.com/kokoye2007/wifi-qr
 Vcs-Git: https://github.com/kokoye2007/wifi-qr.git
 Vcs-Browser: https://github.com/kokoye2007/wifi-qr

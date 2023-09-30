@@ -8,4 +8,3 @@ wifi-qr (0.3-1) unstable; urgency=medium
   * #12 Password with special characters needs to be unquoted.
 
  -- kokoye2007 <kokoye2007@gmail.com>  Sat, 30 Sep 2023 17:30:20 +1000
-
