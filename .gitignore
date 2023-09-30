@@ -8,6 +8,7 @@ files
 *.changes
 *.buildinfo
 *.build
+*.pc
 
 # Ignore directories containing package build artifacts
 debian/tmp

@@ -1,49 +1,92 @@
 #!/bin/bash
 # Github Version
+# DRAFT by Ko Ko Ye and Refactor by ChatGPT 3.5
 
-SOFTWARE=wifi-qr
-VERSION=0.3
-BUILD_DIR=./BUILD_DIR_$SOFTWARE
-SOFTFILE=${SOFTWARE}_${VERSION}
-SOFTTAG=${SOFTWARE}-${VERSION}
+SOFTWARE="wifi-qr"
+VERSION="0.3"
 
-#rm -rf $BUILD_DIR
-# check and make
+BUILD_DIR="./BUILD_DIR_$SOFTWARE"
+SOFTFILE="${SOFTWARE}_${VERSION}"
+SOFTTAG="${SOFTWARE}-${VERSION}"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORK_DIR="$script_dir/$BUILD_DIR/src"
 
-mkdir $BUILD_DIR
-cp -r ./src ./$BUILD_DIR
-cd  $BUILD_DIR/src
-echo ${pwd}
+# Function to create the Debian 3.0 orig file
+build_orig() {
+    # Clean up previous build
+    rm -rf "$BUILD_DIR"
+    
+    # Create and navigate to the build directory
+    mkdir "$BUILD_DIR"
+    cp -r ./src "$BUILD_DIR"
+    cd "$WORK_DIR" || exit
+    
+    # Remove Git metadata
+    rm -rf .git/*
+    
+    # Initialize Debian packaging
+    dh_make -s -e kokoye2007 -c gpl3 -p "$SOFTFILE" --createorig -y
+    
+    # Create GPG signature for orig.tar.xz
+    gpg --armor --detach-sign "../${SOFTFILE}.orig.tar.xz"
+}
 
+# Function to build the Debian package changes file
+build_changes() {
+    echo "Working directory: $(pwd)"
+    debuild -S -i -I
+}
 
-rm .git/* -rf
+# Function to set up Git repository
+git_repo() {
+    git init
+    git add .
+    git remote add origin "git@github.com:kokoye2007/${SOFTWARE}.git"
+    git remote -v
+}
 
-dh_make -s -e kokoye2007 -c gpl3 -p $SOFTFILE --createorig -y
+# Function to create a release tag in Git
+git_tag() {
+    git add -A
+    git commit -m "Clean upstream"
+    git tag -s "$SOFTTAG" -m "Upstream $VERSION"
+    git tag -v "$SOFTTAG"
+    git push -u --force origin master
+}
 
+# Function to create a Git tag and upload a release archive
+git_tag_upload() {
+    git archive --prefix="$SOFTTAG/" -o "../$SOFTTAG.tar.gz" "$SOFTTAG"
+    gpg --armor --detach-sign "../${SOFTTAG}.tar.gz"
+}
 
-cp debian/upstream/*.asc ../${SOFTFILE}.orig.tar.xz.asc
-#gpg --armor  --detach-sign ../${SOFTFILE}.orig.tar.xz.asc
+# Function to run 'uscan' for Debian watch file
+uscan_watch() {
+    uscan --no-download --verbose --debug
+}
 
-echo ${pwd}
-debuild -S -i -I
-
-#dput -f mentor ../${SOFTFILE}_source.changes
-
-
-git init 
-git add .
-#git remote add origin git@salsa.debian.org:kokoye2007-guest/${SOFTWARE}.git
-git remote add origin git@github.com:kokoye2007/${SOFTWARE}.git
-git remote -v
-git commit -m "reclean upstream"
-git tag -s "$SOFTTAG" -m "Upstream $VERSION"
-git tag -v "$SOFTTAG"
-git push -u --force origin master
-
-#
-
-git archive --prefix="$SOFTTAG/" -o "../$SOFTTAG.tar.gz" "$SOFTTAG"
-gpg --armor --detach-sign "../${VERSION}.tar.gz"
-
-uscan --no-download --verbose --debug
-
+# Main script logic
+case "$1" in
+    "build-orig")
+        build_orig
+        ;;
+    "build-changes")
+        build_changes
+        ;;
+    "git-init")
+        git_repo
+        ;;
+    "git-tag")
+        git_tag
+        ;;
+    "git-tag-upload")
+        git_tag_upload
+        ;;
+    "uscan-watch")
+        uscan_watch
+        ;;
+    *)
+        echo "Usage: $0 {build-orig|build-changes|git-init|git-tag|git-tag-upload|uscan-watch}"
+        exit 1
+        ;;
+esac
