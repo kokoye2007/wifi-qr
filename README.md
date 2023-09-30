@@ -1,4 +1,5 @@
-﻿﻿## WiFi Share and Connect with QR
+
+  ## WiFi Share and Connect with QR
 
  Xiaomi Android phones has started using QR to use WiFi for sharing.
  The idea was to get started with Bash, from Android to PC or PC to
