@@ -2,3 +2,18 @@
 files
 *.err
 *.bzr
+
+# Ignore build artifacts
+*.deb
+*.changes
+*.buildinfo
+*.build
+*.pc
+
+# Ignore directories containing package build artifacts
+debian/tmp
+debian/.debhelper
+
+# Ignore package source directories
+debian/*/source
+BUILD_DIR*

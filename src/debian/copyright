@@ -4,12 +4,12 @@ Upstream-Contact: kokoye2007 <kokoye2007@gmail.com>
 Source: https://github.com/kokoye2007/wifi-qr.git
 
 Files: *
-Copyright: 2018 kokoye2007 <kokoye2007@gmail.com>
+Copyright: 2018-2023 kokoye2007 <kokoye2007@gmail.com>
            2013 jontofly <jontofly@github.com>
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2018 kokoye2007 <kokoye2007@gmail.com>
+Copyright: 2018-2023 kokoye2007 <kokoye2007@gmail.com>
 License: GPL-3.0+
 
 License: GPL-3.0+
