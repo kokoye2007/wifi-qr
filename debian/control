@@ -4,14 +4,14 @@ Priority: optional
 Maintainer: kokoye2007 <kokoye2007@gmail.com>
 Build-Depends: debhelper-compat (= 13)
 Rules-Requires-Root: no
-Standards-Version: 4.6.2
+Standards-Version: 4.6.0.1
 Homepage: https://github.com/kokoye2007/wifi-qr
 Vcs-Git: https://github.com/kokoye2007/wifi-qr.git
 Vcs-Browser: https://github.com/kokoye2007/wifi-qr
 
 Package: wifi-qr
 Architecture: all
-Depends: ${misc:Depends}, zenity, qrencode, zbar-tools, fzf
+Depends: ${misc:Depends}, zenity, qrencode, zbar-tools
 Description: WiFi password share via QR codes
  Shares WiFi SSID and password via a QR code.
  Generate a QR code of a WiFi network with its password.
@@ -19,4 +19,4 @@ Description: WiFi password share via QR codes
  .
  For Android, OS version 10 and above is supported.
  .
- For iOS, the Shortcuts app supports generating WiFi QR codes.
+ For iOS, the Shortcut app supports generating WiFi QR codes.

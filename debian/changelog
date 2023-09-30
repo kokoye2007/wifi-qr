@@ -1,33 +1,11 @@
-wifi-qr (0.2-3+18) unstable; urgency=medium
+wifi-qr (0.3) unstable; urgency=medium
 
+  * New upstream release (0.3).
   * #18 Xiaomi QR code is parsed incorrectly.
-
- -- kokoye2007 <kokoye2007@gmail.com>  Mon, 22 May 2023 04:32:35 +1000
-
-wifi-qr (0.2-3) unstable; urgency=medium
-
   * #17 QR issue when the name and SSID differ.
   * #16 QR issue when the password has special characters.
   * #15 QR issue when the SSID has special characters.
   * #12 Password with special characters needs to be unquoted.
 
- -- kokoye2007 <kokoye2007@gmail.com>  Tue, 25 Apr 2023 17:03:31 +0630
+ -- kokoye2007 <kokoye2007@gmail.com>  Sat, 30 Sep 2023 17:30:20 +1000
 
-wifi-qr (0.2-2) unstable; urgency=medium
-
-  * Package description update. (Closes: #989034)
-  * QR Code File Scan
-
- -- kokoye2007 <kokoye2007@gmail.com>  Wed, 27 Apr 2022 17:11:19 +0630
-
-wifi-qr (0.2-1) unstable; urgency=medium
-
-  * Shellcheck and close issue #9
-
- -- kokoye2007 <kokoye2007@gmail.com>  Thu, 18 Jun 2020 15:36:47 +0630
-
-wifi-qr (0.1-1) unstable; urgency=medium
-
-  * Initial upload.
-
- -- kokoye2007 <kokoye2007@gmail.com>  Sun, 31 May 2020 08:40:20 +0630

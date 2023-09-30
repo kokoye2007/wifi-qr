@@ -20,7 +20,7 @@ GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
 RESET=$(tput sgr0)
 BOLD=$(tput bold)
-VERSION=0.2-3
+VERSION=0.3
 
 #RAW DATA SAMPLE
 #"WIFI:S:$SSID;P:$PASSWORD;T:$KEY_TYPE;H:$true;"
