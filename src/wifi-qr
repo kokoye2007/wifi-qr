@@ -6,6 +6,8 @@
 # Ko Ko Ye <kokoye2007@gmail.com>
 # Ubuntu Myanmar LoCo Team
 # https://github.com/kokoye2007/wifi-qr
+#
+# for URI spec see section 7, https://www.wi-fi.org/system/files/WPA3 Specification v3.2.pdf
 
 WIFIS=''
 SSID=''
@@ -14,6 +16,8 @@ PSK=''
 QSSID=''
 QKEES=''
 QSSIDO=''
+QHIDE=false
+QTRANS=''
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
@@ -106,7 +110,7 @@ call_current_wifi_gui() {
 
 #WiFi Command from terminal
 call_wifi_terminal() {
-mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' )
+  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' )
   OLD_IFS=$IFS
   IFS=$'\n'
   for l in "${wifilist[@]}"; do
@@ -231,6 +235,23 @@ call_zbar_img_scan() {
   zbarimg --raw "$img_path" >"$qr_data" 2>/dev/null
 }
 
+function urimap_str(){
+  # parse the stripped WIFI uri and output a suitable
+  # initialisation string for an associateve array (map)
+  local string="$1"
+  local IFS=";"
+  local value
+  set -- $string
+  _ents=()
+  while (( $# > 0)); do
+    value=${1#*:}
+    # perform percent decoding
+    value=$(echo -e "${value//%/\\x}")
+    echo [${1%%:*}]=${value@Q}
+    shift
+  done
+}
+
 call_wifi_scan() {
   mode=$1
   wifiqrdata=''
@@ -244,47 +265,52 @@ call_wifi_scan() {
     call_zbar_img_scan "$qr_data" "$mode" # mode stores the image path
   fi
 
-  wifiqrdata=$(cat $qr_data)
+  wifiqrdata=$(< $qr_data)
   rm -f $qr_data
 
-  # Check if the QR contains WiFi data or not
-  if echo "$wifiqrdata" | grep --quiet ^WIFI; then
-    ## Go Go GUI and CLI Mod
-    # ssid & key are not always in the same sequence - fix by using a dict and cut identifier for first key
-    if echo "$wifiqrdata" | grep --quiet "H:true;"; then
-    	QHIDE=true
-    fi
+  if [[ $wifiqrdata != WIFI:*\; ]]; then
+    echo -e "${RED}============================${RESET}"
+    echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
+    echo -e "${RED}============================${RESET}"
+    echo -e "${BLUE}============================${RESET}"
+    echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
+    echo -e "${BLUE}============================${RESET}"
+    QSSIDO=NOWIFI
+    return
+  else
+    declare -A urimap
+    eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
 
-	WIFIQRDATA="${wifiqrdata}"
+    local k v
+    for k in "${!urimap[@]}"; do
+      v=${urimap[$k]}
+      case $k in
+	H)
+	  QHIDE=$v
+	  ;;
+	P)
+	  QKEES=$v
+	  ;;
+	S)
+	  QSSID=$v
+	  ;;
+	T)
+	  QTYPE=$v
+	  ;;
+	R)
+	  QTRANS=$v
+	  ;;
+      esac
+    done
 
-	# Extract the SSID
-	QSSID=$(echo "$WIFIQRDATA" | sed -n 's/.*S:\([^;]*\)\(;[PHT]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
-
-	# Extract the security type
-	QTYPE=$(echo "$WIFIQRDATA" | sed -n 's/.*T:\([^;]*\)\(;[PHS]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
-
-	# Extract the password
-	if [[ $WIFIQRDATA == *';H:'* ]]; then
-	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*P:\([^;]*\)\(;[TSH]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
-	else
-	  QKEES=$(echo "$WIFIQRDATA" | sed -n 's/.*P:\([^;]*\)\(;[TS]\).*$/\1/p' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
-	fi
-
-	# Check if the Wi-Fi network is hidden
-	if [[ $WIFIQRDATA == *';H:true'* ]]; then
-	  QHIDE="true"
-	else
-	  QHIDE="false"
-	fi
-
-
-	# Print the SSID, security type, password, and hidden attribute
-      echo -e "${GREEN}============================${RESET}"
-      echo -e "${BOLD}${BLUE} SSID: ${RESET} ${WHITE} $QSSID ${RESET}"
-      echo -e "${BOLD}${BLUE} TYPE: ${RESET} ${WHITE} $QTYPE ${RESET}"
-      echo -e "${BOLD}${BLUE} PASS: ${RESET} ${WHITE} $QKEES ${RESET}"
-      echo -e "${BOLD}${BLUE} HIDE: ${RESET} ${WHITE} $QHIDE ${RESET}"
-      echo -e "${GREEN}============================${RESET}"
+    # Print the SSID, security type, password, and hidden attribute
+    echo -e "${GREEN}============================${RESET}"
+    echo -e "${BOLD}${BLUE} SSID: ${RESET} ${WHITE} $QSSID ${RESET}"
+    echo -e "${BOLD}${BLUE} TYPE: ${RESET} ${WHITE} $QTYPE ${RESET}"
+    echo -e "${BOLD}${BLUE} TRANSITION: ${RESET} ${WHITE} $QTRANS ${RESET}"
+    echo -e "${BOLD}${BLUE} PASS: ${RESET} ${WHITE} $QKEES ${RESET}"
+    echo -e "${BOLD}${BLUE} HIDE: ${RESET} ${WHITE} $QHIDE ${RESET}"
+    echo -e "${GREEN}============================${RESET}"
 
 
     if [[ "$QHIDE" == "true" ]]; then
@@ -304,29 +330,28 @@ call_wifi_scan() {
       echo -e "${RED}============================${RESET}"
       QSSIDO=OFF
     fi
-
-  else
-    echo -e "${RED}============================${RESET}"
-    echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
-    echo -e "${RED}============================${RESET}"
-    echo -e "${BLUE}============================${RESET}"
-    echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
-    echo -e "${BLUE}============================${RESET}"
-    QSSIDO=NOWIFI
   fi
 
-# key-mgmt type convert
-
+  # key-mgmt type conversion
   if [[ -z "$QTYPE" ]] ; then
     NTYPE="none"
   elif [[ "$QTYPE" == "WEP" ]] ; then
     NTYPE="ieee8021x"
   elif [[ "$QTYPE" == "WPA" ]] ; then
-    NTYPE="wpa-psk"
+    if [[ "$QTRANS" == 1 ]]; then
+      # WPA3 Personal only
+      NTYPE="sae"
+    else
+      # WPA3 Personal transition/WPA2/WPA
+      NTYPE="wpa-psk"
+    fi
+  elif [[ "$QTYPE" == "SAE" ]]; then
+    # This isn't standard, but at least google pixel phones use it.
+    NTYPE="sae"
   else
-    echo "unknow or need to add key-mgmt type"
+    echo "unknown or need to add key-mgmt type"
+    echo $wifiqrdata
   fi
-
 }
 
 
