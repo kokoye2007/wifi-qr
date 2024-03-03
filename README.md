@@ -2,12 +2,49 @@
   ## WiFi Share and Connect with QR
 
  Xiaomi Android phones has started using QR to use WiFi for sharing.
+ 
  The idea was to get started with Bash, from Android to PC or PC to
+ 
  Mobile, and use Interface for zenity, QR for zbar and qrencode,
+ 
  and nmcli from Network-Manager for Network. For security,
+ 
  you can use WPA, WPA2, WEP, Open and share with the Hidden Network.
+ 
  QR code does not support LDAP Network and VPN.
+ 
  Android can easily generate WiFi QR, iOS via Shortcuts apps.
+
+## Usage
+
+### Generate WIFI QR
+It's easy to generate QR codes for WiFi networks by checking `/etc/NetworkManager/system-connections` to generate WPA, WEP, Open, and even HIDDEN networks using `nmcli`.
+
+You can generate QR codes using:
+- Command line:
+  * `wifi-qr -t` to launch WiFi QR creation from the terminal.
+  * `wifi-qr -c` to launch WiFi QR creation using a GUI.
+  * `wifi-qr -z` to use the terminal with a fuzzy finder for network selection.
+
+- Graphical interface:
+  * `wifi-qr -g` to launch the main menu GUI for various operations including QR generation.
+
+### Scan and Connect with QR Code
+Functioning like an Android QR scanner, this allows scanning and automatically connecting to networks. iOS users can see the password but need to manually connect.
+
+You can scan and connect using:
+- Command line:
+  * `wifi-qr -s` for scanning a QR and auto-connecting to WiFi.
+  * `wifi-qr -f [file]` to scan a QR from a file and auto-connect to WiFi.
+
+- Graphical interface:
+  * `wifi-qr -p` to launch a GUI for scanning a QR from a file and connecting to WiFi.
+  * `wifi-qr -q` to scan and connect to WiFi directly from the GUI.
+
+### Additional Commands
+- `wifi-qr -L` Use legacy (backslash) encoding/decoding.
+- `wifi-qr -v` Display the version of WiFi-QR (Version 0.3).
+- `wifi-qr -h` Show the help message.
 
 
 ## Contributor
@@ -34,32 +71,18 @@
 
 @ls-1N - SSID vs Config File Name.
 
+@iandall - qrdata and WPA3-PSK
+
 - Sorry for Code Clean, Rebase and force upload.
 
 ## v0.1-1 is using bash reading replace with nmcli
 ## v0.1-2 shellcheck pass for #9
-
-## Generate WIFI QR
-it's easy, 
-we check ``/etc/NetworkManager/system-connections`` and generate WPA, WEP and Open, also HIDDEN network.
-> now using nmcli
-you can use command line via
-* ``wifi-qr t`` for terminal only QR.
-* ``wifi-qr g`` for PNG file QR export.
-or using graphics menu.
-* ``Share saved WiFi``
-
-## Scan and Connect with QR Code
-It's like Android QR Scanner,  scan and connect to network.
-*iOS is just see password*
-from terminal 
-* ``wifi-qr s`` for auto connect.
-* ``wifi-qr q`` for show SSID, PASS and Connect.
-or using graphics menu
-* ``Scan and connect``
-
-
-
+## v0-3-1 
+  * #18 Xiaomi QR code is parsed incorrectly.
+  * #17 QR issue when the name and SSID differ.
+  * #16 QR issue when the password has special characters.
+  * #15 QR issue when the SSID has special characters.
+  * #12 Password with special characters needs to be unquoted.
 
 ## Todo list
 - [x] QR Generate with GUI
@@ -73,12 +96,14 @@ or using graphics menu
 - [x] QR Scan Auto Connect Hidden Network
 - [x] icons
 - [x] Password with special characters needs to be unquoted
+- [x] Scan from Image File
+- [x] QRdata
+- [x] WPA3-PSK
 - [ ] Additional LDAP Login
 
 ###  Improve
- All is done
- Just need for LDAP and LEAP
- We will come back when QR Code and Scanner support LDAP and relative thing.
+  LDAP and LEAP
+  We will come back when QR Code and Scanner support LDAP and relative thing.
  
 
 ```

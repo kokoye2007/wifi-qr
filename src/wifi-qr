@@ -7,7 +7,9 @@
 # Ubuntu Myanmar LoCo Team
 # https://github.com/kokoye2007/wifi-qr
 #
-# for URI spec see section 7, https://www.wi-fi.org/system/files/WPA3 Specification v3.2.pdf
+# References:
+#   [1]  section 7, https://www.wi-fi.org/system/files/WPA3 Specification v3.2.pdf
+#   [2]  https://github.com/zxing/zxing/wiki/Barcode-Contents#wi-fi-network-config-android-ios-11
 
 WIFIS=''
 SSID=''
@@ -18,6 +20,7 @@ QKEES=''
 QSSIDO=''
 QHIDE=false
 QTRANS=''
+LEGACY_MODE=''
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
@@ -75,7 +78,7 @@ main_menu() {
 
 #GUI
 call_wifi_gui() {
-mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
+  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
 
   WIFIS=$(zenity --list --column="SSID" \
 	  --width=300 --height=600 \
@@ -97,7 +100,7 @@ call_qr_gui() {
   if [[ -z "$QR_PNG" ]]; then
 	  main_menu
   else
-    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
+    qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$SSID;P:$KEEY;${PSSK:+$PSSK;}${H:+$H;};"
 
     xdg-open "$QR_PNG"
   fi
@@ -160,7 +163,7 @@ mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | 
 
 terminal_qr() {
   call_wifi_pass
-  qrencode -o - -t UTF8 "WIFI:S:$SSID;P:$KEEY;$PSSK;$H;"
+  qrencode -o - -t UTF8 "WIFI:S:$SSID;P:$KEEY;${PSSK:+$PSSK;}${H:+$H;};"
   echo
 }
 
@@ -171,37 +174,56 @@ current_wifi_ssid() {
   echo -e "${BLUE}===============================================================${RESET}"
 }
 
+percent_encode() {
+  local LC_ALL=C c
+  declare -i len=${#1}
+  for ((i=0; i < len; i++ )); do
+    c="${1:i:1}"
+    if [[ $c = [$'\x20'-$'\x3A'$'\x3C'-$'\x7E'] ]]; then 
+      printf %s "$c"
+    else
+      printf %%%02X "'$c"
+    fi
+  done
+}
+encode=percent_encode
+
+legacy_encode(){
+  sed -E 's/[\;,":]/\\&/g' <<<"$1"
+}
+
+
 
 #Data Extractor nmcli version
 call_wifi_pass() {
-  WIFIS=$(echo "${WIFIS}" | sed 's/\\\([\\;,:"\]\)/\1/g' )
-  SSID=$(nmcli -g 802-11-wireless.ssid connection show "${WIFIS}" | sed 's/[;,"]/\\&/g' )
-  KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "${WIFIS}" | sed 's/[;,"]/\\&/g')
+  WIFIS=$(echo "${WIFIS}" | sed 's/\\\([\;,:"]\)/\1/g' )
+  SSID=$(nmcli -g 802-11-wireless.ssid connection show "${WIFIS}")
+  KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "${WIFIS}")
   PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "${WIFIS}" )
   HIDN=$(nmcli -g 802-11-wireless.hidden connection show "${WIFIS}")
-
-  if [[ "$PSK" == *"wpa"* ]]; then
-    PSSK="T:WPA;"
-  elif
-    [[ "$PSK" == "wep" ]]
-  then
-    PSSK="T:WEP;"
+  
+  if [[ PSK == "sae" ]]; then
+    PSSK="T:WPA;R:1"
+  elif [[ "$PSK" == *"wpa"* ]]; then
+    PSSK="T:WPA"
+  elif [[ "$PSK" == "wep" ]]; then
+    PSSK="T:WEP"
   else
-   PSSK=""
+    PSSK=""
   fi
   if [[ "$HIDN" == *"yes"* ]]; then
-      H="H:true;"
+    H="H:true"
   fi
   echo -e "${GREEN}"
   echo ""
-  # echo "SSID:    $SSID"
-  echo "SSID:    $SSID" | sed 's/\\\([\\;,:"\]\)/\1/g'
-  # echo "PASS:    $KEEY"
-  echo "PASS:    $KEEY" | sed 's/\\\([\\;,:"\]\)/\1/g'
+  echo "SSID:    $SSID"
+  echo "PASS:    $KEEY"
   echo "TYPE:    $PSSK"
   echo "HIDE:    $H"
   echo ""
   echo -e "${RESET}"
+  #SSID=$(encode "$SSID")
+  #KEEY=$(encode "$KEEY")
 }
 
 call_zbar_cam_scan() {
@@ -235,18 +257,31 @@ call_zbar_img_scan() {
   zbarimg --raw "$img_path" >"$qr_data" 2>/dev/null
 }
 
-function urimap_str(){
-  # parse the stripped WIFI uri and output a suitable
-  # initialisation string for an associateve array (map)
-  local string="$1"
-  local IFS=";"
+urimap_str(){
+  local string=$1
+  
+  # Percent encoding is specified by the WiFi Alliance [1], but backslash
+  # escapes might occur in legacy environments.  Legacy encoding is
+  # documented in [2] but we can't unambiguously distinguish between
+  # them so we depend on LEGACY_MODE global paramter.
+
+  if [[ $LEGACY_MODE ]]; then
+    # Replace backslash escaped ";" with \xHH form so it doesn't interfere with \xXX splitting
+    string=$(sed -E 's/(([^\]|^)(\\[^;])*)(\\;)/\1\\x3B/g' <<<"$string")
+  fi
+
   local value
+  local IFS=";"
   set -- $string
-  _ents=()
+  IFS=$' \t\n'
   while (( $# > 0)); do
     value=${1#*:}
-    # perform percent decoding
-    value=$(echo -e "${value//%/\\x}")
+    if [[ $LEGACY_MODE ]]; then
+      value=$(sed -E -e ':L;s/\\([\;,":])/\1\n/;tL;s/\n//g' <<<"${value@E}")
+    else
+      value=${value//%/\\x}
+      value=${value@E}
+    fi
     echo [${1%%:*}]=${value@Q}
     shift
   done
@@ -447,7 +482,7 @@ scan_connect_hidden() {
 
 usage() {
   echo ""
-  echo " Usage: $0 [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q] [-v] [-h]"
+  echo " Usage: $0 [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q]  [-L] [-v] [-h]"
   echo ""
   echo " -g	 Launch GUI Main Menu"
   echo " -c	 Launch WiFi QR Create GUI"
@@ -457,6 +492,7 @@ usage() {
   echo " -f file Terminal [file] QR Scan and Auto Connect WiFi from file"
   echo " -p 	 Launch GUI [file] QR Scan and Auto Connect WiFi from file"
   echo " -q	 Launch QR Scan and Connect WiFi GUI"
+  echo " -L      Use legacy (backlash) encoding/decoding" 
   echo " -v	 Show WiFi-QR Version $VERSION"
   echo " -h	 Show this help message"
   echo ""
@@ -480,40 +516,44 @@ if [[ $# -eq 0 ]] || [[ $1 != -* ]]; then
   exit 0
 fi
 
-while getopts ":gctszf:pqvh" opt; do
+while getopts ":gctszf:pqLvh" opt; do
   case $opt in
+    L)
+      LEGACY_MODE=t
+      encode=legacy_encode
+      ;;
     g)
       echo "Launching GUI Main Menu..."
-      main_menu
+      action=main_menu
       ;;
     c)
       echo "Launching WiFi QR Create GUI..."
-      call_wifi_gui
+      action=call_wifi_gui
       ;;
     t)
       echo "Launching WiFi QR Create Terminal..."
-      call_wifi_terminal
+      action=call_wifi_terminal
       ;;
     s)
       echo "Launching QR Scan and Auto Connect WiFi..."
-      call_wifi_scan_terminal "cam"
+      action="call_wifi_scan_terminal cam"
       ;;
     z)
       echo "Launching WiFi QR Create Terminal Fuzzy Finder..."
-      call_wifi_terminal_fzf
+      action=call_wifi_terminal_fzf
       ;;
     f)
       check_file "$OPTARG"
       echo "Launching Terminal [file] QR Scan and Auto Connect WiFi from file: $OPTARG"
-      call_wifi_scan_terminal "$2"
+      action="call_wifi_scan_terminal ${OPTARG@Q}"
       ;;
     p)
       echo "Launching GUI [file] QR Scan and Auto Connect WiFi from file"
-      call_file_select_and_scan_gui
+      action=call_file_select_and_scan_gui
       ;;
     q)
       echo "Launching QR Scan and Connect WiFi GUI..."
-      call_wifi_scan_gui "cam"
+      action="call_wifi_scan_gui cam"
       ;;
     v)
       echo -e "${GREEN}============================${RESET}"
@@ -522,7 +562,7 @@ while getopts ":gctszf:pqvh" opt; do
       ;;
     h)
       usage
-      nmcli device wifi show-password
+      action="nmcli device wifi show-password"
       exit 0
       ;;
     \?)
@@ -538,3 +578,4 @@ while getopts ":gctszf:pqvh" opt; do
       exit 0
   esac
 done
+eval $action
