@@ -179,20 +179,21 @@ percent_encode() {
   declare -i len=${#1}
   for ((i=0; i < len; i++ )); do
     c="${1:i:1}"
-    if [[ $c = [$'\x20'-$'\x3A'$'\x3C'-$'\x7E'] ]]; then 
+    if [[ $c = [$'\x20'-$'\x3A'$'\x3C'-$'\x7E'] ]]; then
       printf %s "$c"
     else
-      printf %%%02X "'$c"
+      printf '%%%02X' "'$c"
     fi
   done
 }
-encode=percent_encode
+
+encode() {
+  percent_encode "$@"
+}
 
 legacy_encode(){
   sed -E 's/[\;,":]/\\&/g' <<<"$1"
 }
-
-
 
 #Data Extractor nmcli version
 call_wifi_pass() {
@@ -222,8 +223,8 @@ call_wifi_pass() {
   echo "HIDE:    $H"
   echo ""
   echo -e "${RESET}"
-  #SSID=$(encode "$SSID")
-  #KEEY=$(encode "$KEEY")
+  SSID=$(encode "$SSID")
+  KEEY=$(encode "$KEEY")
 }
 
 call_zbar_cam_scan() {
