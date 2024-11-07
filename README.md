@@ -47,42 +47,56 @@ You can scan and connect using:
 - `wifi-qr -h` Show the help message.
 
 
+
 ## Contributor
 
-@BT-mfasola - Arrary Redesign
+[@BT-mfasola](https://github.com/BT-mfasola "Matt") - Array Redesign
 
-@i-need-to-tell-you-something - Grammer and Typo Fix
+[@i-need-to-tell-you-something](https://github.com/i-need-to-tell-you-something "i-need-to-tell-you-something") - Grammar and Typo Fix
 
-@Pabs3 - Shellcheck Recommend
+[@Pabs3](https://github.com/Pabs3 "Paul Wise") - Shellcheck Recommend
 
-@Baco - README update for sudo remove
+[@Baco](https://github.com/Baco "Dionisio E Alonso") - README update for sudo remove
 
-@naing2victor - Assistant
+[@naing2victor](https://github.com/naing2victor "Naing Naing Htun") - Assistant
 
-@waiyanwinhtain - Tester and Bug Report
+[@waiyanwinhtain](https://github.com/waiyanwinhtain "wai yan win htain") - Tester and Bug Report
 
-@hosiet - Mentor and Sponsor for Debian
+[@hosiet](https://github.com/hosiet "Boyuan Yang") - Mentor and Sponsor for Debian
 
-@paddatrapper- Mentor and Sponsor for Debian
+[@paddatrapper](https://github.com/paddatrapper "Kyle Robbertze") - Mentor and Sponsor for Debian
 
-@arnabsen1729 - QR Scan from File via CLI and GUI
+[@arnabsen1729](https://github.com/arnabsen1729 "Arnab Sen") - QR Scan from File via CLI and GUI
 
-@sualk - Password with special characters needs to be unquoted
+[@sualk](https://github.com/sualk "sualk") - Password with special characters needs to be unquoted
 
-@ls-1N - SSID vs Config File Name.
+[@ls-1N](https://github.com/ls-1N "ls-1N") - SSID vs Config File Name
 
-@iandall - qrdata and WPA3-PSK
+[@iandall](https://github.com/iandall "Ian Dall") - qrdata and WPA3-PSK
 
-- Sorry for Code Clean, Rebase and force upload.
+[@arnelap](https://github.com/arnelap "Arne Lap") - Better keyboard support Feedback
 
-## v0.1-1 is using bash reading replace with nmcli
-## v0.1-2 shellcheck pass for #9
+> [!NOTE]
+> Sorry for Code Clean, Rebase and force upload.
+
+## Experimental
+
+- [#27](/../../issues/27) Better keyboard support Feedback
+
 ## v0-3-1 
-  * #18 Xiaomi QR code is parsed incorrectly.
-  * #17 QR issue when the name and SSID differ.
-  * #16 QR issue when the password has special characters.
-  * #15 QR issue when the SSID has special characters.
-  * #12 Password with special characters needs to be unquoted.
+  
+- [#18](/../../issues/18) Xiaomi QR code is parsed incorrectly.
+- [#17](/../../issues/17) QR issue when the name and SSID differ.
+- [#16](/../../issues/16) QR issue when the password has special characters.
+- [#15](/../../issues/15) QR issue when the SSID has special characters.
+- [#12](/../../issues/12) Password with special characters needs to be unquoted.
+  
+## v0.1-2 
+- [#9](/../../issues/9) shellcheck pass
+
+
+## v0.1-1 
+bash reading replace with nmcli
 
 ## Todo list
 - [x] QR Generate with GUI
@@ -99,6 +113,7 @@ You can scan and connect using:
 - [x] Scan from Image File
 - [x] QRdata
 - [x] WPA3-PSK
+- [ ] WebCam Selector 
 - [ ] Additional LDAP Login
 
 ###  Improve
@@ -119,23 +134,30 @@ WIFI QR UML.
 
 ```mermaid
 graph TD
-T{Terminal / GUI}
-S[QR Scan]
-W[WebCam]
-F[File]
-Q[QR Create]
-SSID[WIFI SSID]
-PNG[QR and PNG FILE]
-SSID_LIST{WIFI SSID LIST}
-
-
-T --> S
-S --> W --> SSID
-S --> F --> SSID
-
-
-T --> Q
-Q --> SSID_LIST --> PNG
+    T[Terminal / GUI] --> S[QR Scanner]
+    T --> Q[QR Creator]
+    
+    %% Scanner Branch
+    S --> W[Webcam]
+    S --> F[QR File]
+    
+    W --> P[Process QR]
+    F --> P
+   
+    P --> WIFI[Connect WIFI]
+    
+    %% Creator Branch
+    Q --> CURRENT_SSID[Current SSID]
+    Q --> SSID_LIST[SSID List]
+    SSID_LIST --> GEN[Generate QR]
+    CURRENT_SSID --> GEN
+    GEN --> PNG[QR PNG File]
+    
+    %% Styling
+    classDef process fill:#f9f,stroke:#333,stroke-width:2px
+    classDef input fill:#bbf,stroke:#333,stroke-width:2px
+    class W,F,SSID_LIST,CURRENT_SSID input
+    class P,GEN process
 ```
 
 

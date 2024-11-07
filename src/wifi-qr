@@ -40,15 +40,14 @@ main_menu() {
   CHOICE=$(zenity --list \
     --title="WiFi and QR Code" \
     --text="Choose:" \
-    --radiolist \
-    --width=300 --height=320 \
-    --column="Check" --column="Option" \
-    TRUE "Scan and connect" \
-    FALSE "Scan Image and connect" \
-    FALSE "Share current WiFi" \
-    FALSE "Share saved WiFi" \
-    FALSE "See license" \
-    FALSE "See version")
+    --width=320 --height=360 \
+    --column="Menu:" \
+      "Scan and connect" \
+      "Scan Image and connect" \
+      "Share current WiFi" \
+      "Share saved WiFi" \
+      "See license" \
+      "See version")
 
   #Menu Select
   if [[ "$CHOICE" =~ "Share saved WiFi" ]]; then
@@ -68,7 +67,7 @@ main_menu() {
     main_menu
 
   elif [[ "$CHOICE" =~ "See version" ]]; then
-    zenity --info --icon-name=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
+    zenity --info --icon=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
     main_menu
   else
 	exit 0
