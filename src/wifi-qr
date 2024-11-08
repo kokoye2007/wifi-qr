@@ -21,6 +21,7 @@ QSSIDO=''
 QHIDE=false
 QTRANS=''
 LEGACY_MODE=''
+encode=percent_encode
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
@@ -116,7 +117,7 @@ call_wifi_terminal() {
   OLD_IFS=$IFS
   IFS=$'\n'
   for l in "${wifilist[@]}"; do
-    array[$i]=$l
+    array[i]=$l
     i=$((i + 1))
   done
 
@@ -144,7 +145,7 @@ mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | 
   OLD_IFS=$IFS
   IFS=$'\n'
   for l in "${wifilist[@]}"; do
-    array[$i]=$l
+    array[i]=$l
     i=$((i + 1))
   done
   IFS=$OLD_IFS
@@ -186,10 +187,6 @@ percent_encode() {
   done
 }
 
-encode() {
-  percent_encode "$@"
-}
-
 legacy_encode(){
   sed -E 's/[\;,":]/\\&/g' <<<"$1"
 }
@@ -202,7 +199,7 @@ call_wifi_pass() {
   PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "${WIFIS}" )
   HIDN=$(nmcli -g 802-11-wireless.hidden connection show "${WIFIS}")
   
-  if [[ PSK == "sae" ]]; then
+  if [[ "$PSK" == "sae" ]]; then
     PSSK="T:WPA;R:1"
   elif [[ "$PSK" == *"wpa"* ]]; then
     PSSK="T:WPA"
@@ -222,8 +219,8 @@ call_wifi_pass() {
   echo "HIDE:    $H"
   echo ""
   echo -e "${RESET}"
-  SSID=$(encode "$SSID")
-  KEEY=$(encode "$KEEY")
+  SSID=$($encode "$SSID")
+  KEEY=$($encode "$KEEY")
 }
 
 call_zbar_cam_scan() {
@@ -272,7 +269,7 @@ urimap_str(){
 
   local value
   local IFS=";"
-  set -- $string
+  set -- "$string"
   IFS=$' \t\n'
   while (( $# > 0)); do
     value=${1#*:}
@@ -282,7 +279,7 @@ urimap_str(){
       value=${value//%/\\x}
       value=${value@E}
     fi
-    echo [${1%%:*}]=${value@Q}
+    echo ["${1%%:*}"]="${value@Q}"
     shift
   done
 }
@@ -300,8 +297,8 @@ call_wifi_scan() {
     call_zbar_img_scan "$qr_data" "$mode" # mode stores the image path
   fi
 
-  wifiqrdata=$(< $qr_data)
-  rm -f $qr_data
+  wifiqrdata=$(< "$qr_data")
+  rm -f "$qr_data"
 
   if [[ $wifiqrdata != WIFI:*\; ]]; then
     echo -e "${RED}============================${RESET}"
@@ -314,27 +311,28 @@ call_wifi_scan() {
     return
   else
     declare -A urimap
-    eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
+    eval "urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)"
+
 
     local k v
     for k in "${!urimap[@]}"; do
       v=${urimap[$k]}
       case $k in
-	H)
-	  QHIDE=$v
-	  ;;
-	P)
-	  QKEES=$v
-	  ;;
-	S)
-	  QSSID=$v
-	  ;;
-	T)
-	  QTYPE=$v
-	  ;;
-	R)
-	  QTRANS=$v
-	  ;;
+	      H)
+	        QHIDE=$v
+	        ;;
+	      P)
+	        QKEES=$v
+	        ;;
+	      S)
+	        QSSID=$v
+	        ;;
+	      T)
+	        QTYPE=$v
+	        ;;
+	      R)
+	        QTRANS=$v
+	        ;;
       esac
     done
 
@@ -385,7 +383,7 @@ call_wifi_scan() {
     NTYPE="sae"
   else
     echo "unknown or need to add key-mgmt type"
-    echo $wifiqrdata
+    echo "$wifiqrdata"
   fi
 }
 
@@ -447,7 +445,7 @@ call_wifi_scan_gui() {
     fi
   elif [[ "$QHIDE" =~ "true" ]]; then
     zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
-    if [ $connectn = 0 ]; then
+    if [ "$connectn" = 0 ]; then
       scan_connect_hidden
     else
       exit
@@ -578,4 +576,4 @@ while getopts ":gctszf:pqLvh" opt; do
       exit 0
   esac
 done
-eval $action
+eval "$action"
