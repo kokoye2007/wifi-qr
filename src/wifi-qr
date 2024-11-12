@@ -406,7 +406,7 @@ call_wifi_scan_gui() {
   call_wifi_scan "$1"
   # Function with QR data
   if [[ "$QSSIDO" =~ "ON" ]]; then
-    zenity --question --title="Connect to WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
+    zenity --question --title="Connect to WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
     connectn=$?
     if [ $connectn == 0 ]; then \
       scan_connect
@@ -417,12 +417,11 @@ call_wifi_scan_gui() {
     CHOICE=$(zenity --list \
       --title="Can't find WiFi" \
       --text="Choose:" \
-      --radiolist \
       --width=400 --height=180 \
       --column="Check" --column="Option" \
-      --icon-name=network-wireless-offline \
-      TRUE "Retry scanning internally" \
-      FALSE "Retry submitting another QR Code" )
+      --icon=network-wireless-offline \
+      "Retry scanning internally" \
+      "Retry submitting another QR Code" )
     if [[ "$CHOICE" =~ "Retry scanning internally" ]]; then
       echo e "${BOLD}Scanning in progess ... ${RESET}"
       nmcli radio wifi off
@@ -444,7 +443,7 @@ call_wifi_scan_gui() {
       exit
     fi
   elif [[ "$QHIDE" =~ "true" ]]; then
-    zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
+    zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
     if [ "$connectn" = 0 ]; then
       scan_connect_hidden
     else
