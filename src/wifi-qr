@@ -272,8 +272,10 @@ urimap_str(){
 
   local value
   local IFS=";"
+
   # Use an array to avoid SC2086 issue
   read -ra elements <<< "$string"
+
   IFS=$' \t\n'
   
   for element in "${elements[@]}"; do
@@ -284,8 +286,10 @@ urimap_str(){
       value=${value//%/\\x}
       value=${value@E}
     fi
+
     # Quote variables as recommended by shellcheck
     echo "[${element%%:*}]=${value@Q}"
+
   done
 }
 
@@ -326,25 +330,26 @@ call_wifi_scan() {
 
     # eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
 
+
     local k v
     for k in "${!urimap[@]}"; do
       v=${urimap[$k]}
       case $k in
-	H)
-	  QHIDE=$v
-	  ;;
-	P)
-	  QKEES=$v
-	  ;;
-	S)
-	  QSSID=$v
-	  ;;
-	T)
-	  QTYPE=$v
-	  ;;
-	R)
-	  QTRANS=$v
-	  ;;
+	      H)
+	        QHIDE=$v
+	        ;;
+	      P)
+	        QKEES=$v
+	        ;;
+	      S)
+	        QSSID=$v
+	        ;;
+	      T)
+	        QTYPE=$v
+	        ;;
+	      R)
+	        QTRANS=$v
+	        ;;
       esac
     done
 
