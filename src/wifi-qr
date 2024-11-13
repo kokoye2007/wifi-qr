@@ -23,6 +23,11 @@ QTRANS=''
 LEGACY_MODE=''
 encode=percent_encode
 
+# Define configuration paths following XDG Base Directory Specification
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+CONFIG_DIR="${CONFIG_HOME}/wifi-qr_webcam"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
@@ -47,6 +52,7 @@ main_menu() {
       "Scan Image and connect" \
       "Share current WiFi" \
       "Share saved WiFi" \
+      "WebCam Configure" \
       "See license" \
       "See version")
 
@@ -62,6 +68,10 @@ main_menu() {
 
   elif [[ "$CHOICE" =~ "Scan Image and connect" ]]; then
     call_file_select_and_scan_gui
+
+  elif [[ "$CHOICE" =~ "WebCam Configure" ]]; then
+    get_webcam_devices
+    main_menu
 
   elif [[ "$CHOICE" =~ "See license" ]]; then
     zenity --text-info --title="WiFi QR Copyright" --filename=/usr/share/doc/wifi-qr/copyright --width=528 --height=780
@@ -98,7 +108,7 @@ call_qr_gui() {
   call_wifi_pass
   QR_FILE_NAME="wifi-qr-$(echo "$WIFIS" | tr -dc '[:alnum:]').png"
   SAVE_QR_DIR="${HOME}/Pictures/"
-  QR_PNG="$(zenity --file-selection --save   --file-filter="PNG files | *.png" --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
+  QR_PNG="$(zenity --file-selection --save --file-filter="PNG files | *.png" --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
   if [[ -z "$QR_PNG" ]]; then
 	  main_menu
   else
@@ -227,8 +237,11 @@ call_wifi_pass() {
 }
 
 call_zbar_cam_scan() {
+  zbarwebcam=/dev/video0
+  check_existing_config
+
   qr_data=$1
-  zbarcam --raw --prescale=320x240 /dev/video0 >"$qr_data" &
+  zbarcam --raw --prescale=320x240 "$zbarwebcam" >"$qr_data" &
 
   # Last job running in background eg. zbarcam
   pid=$!
@@ -505,6 +518,11 @@ usage() {
   echo " -v	 Show WiFi-QR Version $VERSION"
   echo " -h	 Show this help message"
   echo ""
+  show_current_password
+}
+
+show_current_password(){
+  nmcli device wifi show-password
 }
 
 check_file() {
@@ -520,12 +538,201 @@ check_file() {
   fi
 }
 
+# Check if v4l2-ctl is installed
+check_v4l2() {
+    if ! command -v v4l2-ctl &> /dev/null; then
+        if command -v zenity &> /dev/null; then
+            zenity --error \
+                --title="v4l2-ctl Not Found" \
+                --text="The v4l2-ctl utility is required but not installed.\n\nPlease install the v4l-utils package using your package manager:\n\nsudo apt install v4l-utils"
+        else
+            echo "Error: v4l2-ctl is not installed. Please install the v4l-utils package." >&2
+        fi
+        exit 1
+    fi
+}
+
+# Check if device in config exists and is available
+check_existing_config() {
+    check_v4l2
+    if [ -f "${CONFIG_FILE}" ]; then
+        local current_device
+        current_device=$(grep "qrwebcam=" "${CONFIG_FILE}" | cut -d= -f2) || true
+        current_device_name=$(grep "qrcamname=" "${CONFIG_FILE}" | cut -d= -f2) || true
+
+        if [ -n "$current_device" ]; then
+            if [ -e "$current_device" ] && v4l2-ctl --device "$current_device" --all &>/dev/null; then
+                echo "Configured webcam device is available: $current_device"
+                zbarwebcam=$current_device
+                return 0
+            fi
+
+            # Device not available - ask user what to do
+            if command -v zenity &> /dev/null; then
+                local action
+                action=$(zenity --list \
+                    --title="Webcam Device Not Available" \
+                    --text="The configured webcam '$current_device_name' is not available." \
+                    --column="Action" \
+                    "Select new webcam device" \
+                    "Remove configuration" \
+                    --width=400 \
+                    --height=280)
+
+                case "$action" in
+                    "Select new webcam device")
+                        get_webcam_devices
+                        ;;
+                    "Remove configuration")
+                        rm -f "${CONFIG_FILE}"
+                        echo "Configuration removed"
+                        ;;
+                    *)
+                        echo "No action taken" >&2
+                        exit 1
+                        ;;
+                esac
+            else
+                # Fallback to command line interface
+                echo "The configured webcam device '$current_device_name' is not available."
+                echo "Options:"
+                echo "1) Select new webcam device"
+                echo "2) Remove configuration"
+                echo "3) Exit"
+                echo -n "Select option (1-3): "
+                read -r choice
+
+                case "$choice" in
+                    1)
+                        get_webcam_devices
+                        ;;
+                    2)
+                        rm -f "${CONFIG_FILE}"
+                        echo "Configuration removed"
+                        ;;
+                    *)
+                        echo "No action taken" >&2
+                        exit 1
+                        ;;
+                esac
+            fi
+        else
+            echo "Invalid configuration format" >&2
+            get_webcam_devices
+        fi
+    else
+        echo "No existing configuration found"
+        unset current_device
+    fi
+}
+
+# Get webcam devices and create formatted list
+get_webcam_devices() {
+    local devices
+    devices=$(v4l2-ctl --list-devices 2>/dev/null | grep -A1 ":$" | grep "/dev/video" | sed 's/\t//g') || true
+
+    if [ -z "$devices" ]; then
+        if command -v zenity &> /dev/null; then
+            zenity --error \
+                --title="No Webcam Found" \
+                --text="No webcam devices were detected on the system."
+        else
+            echo "Error: No webcam devices detected." >&2
+        fi
+        exit 1
+    fi
+
+    # Create array to store device info
+    declare -a device_list
+
+    # Process each device
+    while read -r dev; do
+        if [ -n "$dev" ]; then
+            local id name
+            id=$(basename "$dev")
+            name=$(v4l2-ctl --device "$dev" --all 2>/dev/null | grep "Card type" | cut -d: -f2 | sed 's/^ *//')
+            if [ -n "$name" ]; then
+                device_list+=("$id" "$name" "$dev")
+            fi
+        fi
+    done <<< "$devices"
+
+    # Present device selection dialog if zenity is available
+    if command -v zenity &> /dev/null; then
+        local selected
+        selected=$(zenity --list \
+            --title="Select Webcam Device" \
+            --column="ID" \
+            --column="Name" \
+            --column="Device" \
+            "${device_list[@]}" \
+            --print-column=2,3 \
+            --width=500 \
+            --height=300)
+
+        if [ -n "$selected" ]; then
+            name="$(echo "$selected" | cut -d'|' -f1)"
+            device="$(echo "$selected" | cut -d'|' -f2)"
+            save_config "$name" "$device"
+        else
+            echo "No device selected" >&2
+            exit 1
+        fi
+    else
+        # Fallback to command line interface
+        echo "Available webcam devices:"
+        local i=1
+        for ((idx=0; idx<${#device_list[@]}; idx+=3)); do
+            echo "$i) ${device_list[$idx+1]} (${device_list[$idx+2]})"
+            ((i++))
+        done
+
+        echo -n "Select device number (1-$((i-1))): "
+        read -r selection
+
+        if [ "$selection" -ge 1 ] && [ "$selection" -lt "$i" ]; then
+            local idx=$(((selection-1)*3))
+            save_config "${device_list[$idx+1]}" "${device_list[$idx+2]}"
+        else
+            echo "Invalid selection" >&2
+            exit 1
+        fi
+    fi
+}
+
+
+# Save configuration
+save_config() {
+    local device=$2
+    local name=$1
+    # Create config directory if it doesn't exist
+    mkdir -p "${CONFIG_DIR}"
+
+    # Save with restrictive permissions
+    (
+    echo "qrwebcam=$device"
+    echo "qrcamname=$name"
+    )> "${CONFIG_FILE}"
+    chmod 600 "${CONFIG_FILE}"
+
+    if command -v zenity &> /dev/null; then
+        zenity --info \
+            --icon="webcamoid" \
+            --title="Save Webcam $name" \
+            --text="Selected webcam: $name - $device"
+    else
+        echo "Selected webcam: $name - $device"
+    fi
+
+}
+
+
 if [[ $# -eq 0 ]] || [[ $1 != -* ]]; then
   usage
   exit 0
 fi
 
-while getopts ":gctszf:pqLvh" opt; do
+while getopts ":gctszf:pqLvwh" opt; do
   case $opt in
     L)
       LEGACY_MODE=t
@@ -569,9 +776,12 @@ while getopts ":gctszf:pqLvh" opt; do
       echo -e "${BOLD}${WHITE}	WiFI-QR $VERSION ${RESET}"
       echo -e "${GREEN}============================${RESET}"
       ;;
+    w)
+      echo "Select a webcam for the QR code scanner"
+      action=get_webcam_devices
+      ;;
     h)
       usage
-      action="nmcli device wifi show-password"
       exit 0
       ;;
     \?)
