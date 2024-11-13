@@ -21,6 +21,7 @@ QSSIDO=''
 QHIDE=false
 QTRANS=''
 LEGACY_MODE=''
+encode=percent_encode
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
@@ -74,11 +75,13 @@ main_menu() {
   fi
 }
 
+wifilist_call(){
+  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' | sed 's/\\\([\\;,:"\]\)/\1/g' )
+}
 
 #GUI
 call_wifi_gui() {
-  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
-
+  wifilist_call
   WIFIS=$(zenity --list --column="SSID" \
 	  --width=300 --height=600 \
 	  --title="Select SSID" \
@@ -95,7 +98,7 @@ call_qr_gui() {
   call_wifi_pass
   QR_FILE_NAME="wifi-qr-$(echo "$WIFIS" | tr -dc '[:alnum:]').png"
   SAVE_QR_DIR="${HOME}/Pictures/"
-  QR_PNG="$(zenity --file-selection --save --confirm-overwrite --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
+  QR_PNG="$(zenity --file-selection --save   --file-filter="PNG files | *.png" --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
   if [[ -z "$QR_PNG" ]]; then
 	  main_menu
   else
@@ -112,13 +115,14 @@ call_current_wifi_gui() {
 
 #WiFi Command from terminal
 call_wifi_terminal() {
-  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' )
+  wifilist_call
   OLD_IFS=$IFS
   IFS=$'\n'
   for l in "${wifilist[@]}"; do
-    array[$i]=$l
+    array[i]=$l
     i=$((i + 1))
   done
+  IFS=$OLD_IFS
 
   i=0
   for m in "${array[@]}"; do
@@ -140,11 +144,11 @@ call_wifi_terminal() {
 
 #WiFi Command from terminal with FZF
 call_wifi_terminal_fzf() {
-mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' | sed 's/\\\([\\;,:"\]\)/\1/g' )
+  wifilist_call
   OLD_IFS=$IFS
   IFS=$'\n'
   for l in "${wifilist[@]}"; do
-    array[$i]=$l
+    array[i]=$l
     i=$((i + 1))
   done
   IFS=$OLD_IFS
@@ -186,23 +190,19 @@ percent_encode() {
   done
 }
 
-encode() {
-  percent_encode "$@"
-}
-
 legacy_encode(){
   sed -E 's/[\;,":]/\\&/g' <<<"$1"
 }
 
 #Data Extractor nmcli version
 call_wifi_pass() {
-  WIFIS=$(echo "${WIFIS}" | sed 's/\\\([\;,:"]\)/\1/g' )
+  WIFIS="${WIFIS//\\([;,:\"])/}"
   SSID=$(nmcli -g 802-11-wireless.ssid connection show "${WIFIS}")
   KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "${WIFIS}")
   PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "${WIFIS}" )
   HIDN=$(nmcli -g 802-11-wireless.hidden connection show "${WIFIS}")
   
-  if [[ PSK == "sae" ]]; then
+  if [[ "$PSK" == "sae" ]]; then
     PSSK="T:WPA;R:1"
   elif [[ "$PSK" == *"wpa"* ]]; then
     PSSK="T:WPA"
@@ -222,8 +222,8 @@ call_wifi_pass() {
   echo "HIDE:    $H"
   echo ""
   echo -e "${RESET}"
-  SSID=$(encode "$SSID")
-  KEEY=$(encode "$KEEY")
+  SSID=$($encode "$SSID")
+  KEEY=$($encode "$KEEY")
 }
 
 call_zbar_cam_scan() {
@@ -259,11 +259,11 @@ call_zbar_img_scan() {
 
 urimap_str(){
   local string=$1
-  
+
   # Percent encoding is specified by the WiFi Alliance [1], but backslash
   # escapes might occur in legacy environments.  Legacy encoding is
   # documented in [2] but we can't unambiguously distinguish between
-  # them so we depend on LEGACY_MODE global paramter.
+  # them so we depend on LEGACY_MODE global parameter.
 
   if [[ $LEGACY_MODE ]]; then
     # Replace backslash escaped ";" with \xHH form so it doesn't interfere with \xXX splitting
@@ -272,18 +272,20 @@ urimap_str(){
 
   local value
   local IFS=";"
-  set -- $string
+  # Use an array to avoid SC2086 issue
+  read -ra elements <<< "$string"
   IFS=$' \t\n'
-  while (( $# > 0)); do
-    value=${1#*:}
+  
+  for element in "${elements[@]}"; do
+    value=${element#*:}
     if [[ $LEGACY_MODE ]]; then
       value=$(sed -E -e ':L;s/\\([\;,":])/\1\n/;tL;s/\n//g' <<<"${value@E}")
     else
       value=${value//%/\\x}
       value=${value@E}
     fi
-    echo [${1%%:*}]=${value@Q}
-    shift
+    # Quote variables as recommended by shellcheck
+    echo "[${element%%:*}]=${value@Q}"
   done
 }
 
@@ -300,8 +302,8 @@ call_wifi_scan() {
     call_zbar_img_scan "$qr_data" "$mode" # mode stores the image path
   fi
 
-  wifiqrdata=$(< $qr_data)
-  rm -f $qr_data
+  wifiqrdata=$(< "$qr_data")
+  rm -f "$qr_data"
 
   if [[ $wifiqrdata != WIFI:*\; ]]; then
     echo -e "${RED}============================${RESET}"
@@ -314,7 +316,15 @@ call_wifi_scan() {
     return
   else
     declare -A urimap
-    eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
+
+    # Capture the output of urimap_str in a variable first
+    local urimap_result
+    urimap_result=$(urimap_str "${wifiqrdata:5:-1}")
+    
+    # Then use eval with the variable, avoiding SC2046 warning
+    eval urimap="(${urimap_result})"
+
+    # eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
 
     local k v
     for k in "${!urimap[@]}"; do
@@ -385,7 +395,7 @@ call_wifi_scan() {
     NTYPE="sae"
   else
     echo "unknown or need to add key-mgmt type"
-    echo $wifiqrdata
+    echo "$wifiqrdata"
   fi
 }
 
@@ -408,7 +418,7 @@ call_wifi_scan_gui() {
   call_wifi_scan "$1"
   # Function with QR data
   if [[ "$QSSIDO" =~ "ON" ]]; then
-    zenity --question --title="Connect to WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
+    zenity --question --title="Connect to WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
     connectn=$?
     if [ $connectn == 0 ]; then \
       scan_connect
@@ -419,12 +429,11 @@ call_wifi_scan_gui() {
     CHOICE=$(zenity --list \
       --title="Can't find WiFi" \
       --text="Choose:" \
-      --radiolist \
       --width=400 --height=180 \
       --column="Check" --column="Option" \
-      --icon-name=network-wireless-offline \
-      TRUE "Retry scanning internally" \
-      FALSE "Retry submitting another QR Code" )
+      --icon=network-wireless-offline \
+      "Retry scanning internally" \
+      "Retry submitting another QR Code" )
     if [[ "$CHOICE" =~ "Retry scanning internally" ]]; then
       echo e "${BOLD}Scanning in progess ... ${RESET}"
       nmcli radio wifi off
@@ -446,8 +455,8 @@ call_wifi_scan_gui() {
       exit
     fi
   elif [[ "$QHIDE" =~ "true" ]]; then
-    zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon-name=network-wireless 2>/dev/null
-    if [ $connectn = 0 ]; then
+    zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
+    if [ "$connectn" = 0 ]; then
       scan_connect_hidden
     else
       exit
@@ -578,4 +587,4 @@ while getopts ":gctszf:pqLvh" opt; do
       exit 0
   esac
 done
-eval $action
+eval "$action"
