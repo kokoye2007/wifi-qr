@@ -75,11 +75,13 @@ main_menu() {
   fi
 }
 
+wifilist_call(){
+  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' | sed 's/\\\([\\;,:"\]\)/\1/g' )
+}
 
 #GUI
 call_wifi_gui() {
-  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' |  sed 's/\\\([\\;,:"\]\)/\1/g' )
-
+  wifilist_call
   WIFIS=$(zenity --list --column="SSID" \
 	  --width=300 --height=600 \
 	  --title="Select SSID" \
@@ -96,7 +98,7 @@ call_qr_gui() {
   call_wifi_pass
   QR_FILE_NAME="wifi-qr-$(echo "$WIFIS" | tr -dc '[:alnum:]').png"
   SAVE_QR_DIR="${HOME}/Pictures/"
-  QR_PNG="$(zenity --file-selection --save --confirm-overwrite --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
+  QR_PNG="$(zenity --file-selection --save   --file-filter="PNG files | *.png" --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
   if [[ -z "$QR_PNG" ]]; then
 	  main_menu
   else
@@ -113,13 +115,14 @@ call_current_wifi_gui() {
 
 #WiFi Command from terminal
 call_wifi_terminal() {
-  mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' )
+  wifilist_call
   OLD_IFS=$IFS
   IFS=$'\n'
   for l in "${wifilist[@]}"; do
     array[i]=$l
     i=$((i + 1))
   done
+  IFS=$OLD_IFS
 
   i=0
   for m in "${array[@]}"; do
@@ -141,7 +144,7 @@ call_wifi_terminal() {
 
 #WiFi Command from terminal with FZF
 call_wifi_terminal_fzf() {
-mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' | sed 's/\\\([\\;,:"\]\)/\1/g' )
+  wifilist_call
   OLD_IFS=$IFS
   IFS=$'\n'
   for l in "${wifilist[@]}"; do
@@ -193,7 +196,7 @@ legacy_encode(){
 
 #Data Extractor nmcli version
 call_wifi_pass() {
-  WIFIS=$(echo "${WIFIS}" | sed 's/\\\([\;,:"]\)/\1/g' )
+  WIFIS="${WIFIS//\\([;,:\"])/}"
   SSID=$(nmcli -g 802-11-wireless.ssid connection show "${WIFIS}")
   KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "${WIFIS}")
   PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "${WIFIS}" )
@@ -256,11 +259,11 @@ call_zbar_img_scan() {
 
 urimap_str(){
   local string=$1
-  
+
   # Percent encoding is specified by the WiFi Alliance [1], but backslash
   # escapes might occur in legacy environments.  Legacy encoding is
   # documented in [2] but we can't unambiguously distinguish between
-  # them so we depend on LEGACY_MODE global paramter.
+  # them so we depend on LEGACY_MODE global parameter.
 
   if [[ $LEGACY_MODE ]]; then
     # Replace backslash escaped ";" with \xHH form so it doesn't interfere with \xXX splitting
@@ -269,18 +272,24 @@ urimap_str(){
 
   local value
   local IFS=";"
-  set -- "$string"
+
+  # Use an array to avoid SC2086 issue
+  read -ra elements <<< "$string"
+
   IFS=$' \t\n'
-  while (( $# > 0)); do
-    value=${1#*:}
+  
+  for element in "${elements[@]}"; do
+    value=${element#*:}
     if [[ $LEGACY_MODE ]]; then
       value=$(sed -E -e ':L;s/\\([\;,":])/\1\n/;tL;s/\n//g' <<<"${value@E}")
     else
       value=${value//%/\\x}
       value=${value@E}
     fi
-    echo ["${1%%:*}"]="${value@Q}"
-    shift
+
+    # Quote variables as recommended by shellcheck
+    echo "[${element%%:*}]=${value@Q}"
+
   done
 }
 
@@ -311,7 +320,15 @@ call_wifi_scan() {
     return
   else
     declare -A urimap
-    eval "urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)"
+
+    # Capture the output of urimap_str in a variable first
+    local urimap_result
+    urimap_result=$(urimap_str "${wifiqrdata:5:-1}")
+    
+    # Then use eval with the variable, avoiding SC2046 warning
+    eval urimap="(${urimap_result})"
+
+    # eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
 
 
     local k v
