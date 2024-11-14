@@ -2,7 +2,7 @@
 
 # Variables
 SOFTWARE := wifi-qr
-VERSION := 0.3-3
+VERSION := 0.3-2
 SOFTFILE := $(SOFTWARE)_$(VERSION)
 SOFTTAG := $(SOFTWARE)-$(VERSION)
 BUILD_DIR := BUILD_DIR_$(SOFTWARE)
@@ -53,8 +53,8 @@ git-init:
 # Create and push a Git tag
 git-tag:
 	@echo "Creating and pushing Git tag..."
-	git add -A
-	git commit -s -am "$(SOFTWARE) $(VERSION)"
+	# git add -A
+	# git commit -s -am "$(SOFTWARE) $(VERSION)"
 	git tag -s $(SOFTTAG) -m "Upstream $(VERSION)"
 	git tag -v $(SOFTTAG) 
 	git push -u origin master
@@ -69,7 +69,7 @@ git-archive:
 
 git-tag-upload:
 	@echo "Release archive created and signed."
-	gh release create $(SOFTTAG) \
+	gh release create $(VERSION) \
 		../$(ARCHIVE) \
 		../$(ARCHIVE).asc \
     ../$(SOFTTAG)_$(CHECKSUM_FILE_SHA) \
