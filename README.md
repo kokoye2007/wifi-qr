@@ -131,7 +131,7 @@ bash reading replace with nmcli
 - [x] Scan from Image File
 - [x] QRdata
 - [x] WPA3-PSK
-- [ ] WebCam Selector 
+- [x] WebCam Selector 
 - [ ] Additional LDAP Login
 
 ###  Improve
