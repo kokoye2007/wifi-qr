@@ -509,7 +509,7 @@ scan_connect_hidden() {
 
 usage() {
   echo ""
-  echo " Usage: $0 [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q] [-L] [-v] [-w] [-h]"
+  echo " Usage: $(basename "$0") [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q] [-L] [-v] [-w] [-h]"
   echo ""
   echo " -g	 Launch GUI Main Menu"
   echo " -c	 Launch WiFi QR Create GUI"
