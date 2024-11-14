@@ -2,14 +2,25 @@
 # Github Version
 # DRAFT by Ko Ko Ye and Refactor by ChatGPT 3.5
 
-SOFTWARE="wifi-qr"
-VERSION="0.3"
+#### JUST DRAFT - NOT TEST YET ####
 
-BUILD_DIR="./BUILD_DIR_$SOFTWARE"
+SOFTWARE="wifi-qr"
+VERSION="0.3-2"
+
+BUILD_DIR="../BUILD_DIR_$SOFTWARE"
 SOFTFILE="${SOFTWARE}_${VERSION}"
 SOFTTAG="${SOFTWARE}-${VERSION}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORK_DIR="$script_dir/$BUILD_DIR/src"
+WORK_DIR="$script_dir/$BUILD_DIR/"
+
+echo_test() {
+  echo BUILD_DIR: $BUILD_DIR
+  echo SOFTFILE:  $SOFTFILE
+  echo SOFTTAG:   $SOFTTAG
+  echo SCRIPT:    $script_dir
+  echo WORK_DIR:  $WORK_DIR
+}
+
 
 # Function to create the Debian 3.0 orig file
 build_orig() {
@@ -18,7 +29,7 @@ build_orig() {
     
     # Create and navigate to the build directory
     mkdir "$BUILD_DIR"
-    cp -r ./src "$BUILD_DIR"
+    cp -r ./ "$BUILD_DIR"
     cd "$WORK_DIR" || exit
     
     # Remove Git metadata
@@ -48,7 +59,7 @@ git_repo() {
 # Function to create a release tag in Git
 git_tag() {
     git add -A
-    git commit -m "Clean upstream"
+    git commit -s -am "wifi-qr $VERSION"
     git tag -s "$SOFTTAG" -m "Upstream $VERSION"
     git tag -v "$SOFTTAG"
     git push -u --force origin master
@@ -84,6 +95,9 @@ case "$1" in
         ;;
     "uscan-watch")
         uscan_watch
+        ;;
+    "echo")
+        echo_test
         ;;
     *)
         echo "Usage: $0 {build-orig|build-changes|git-init|git-tag|git-tag-upload|uscan-watch}"
