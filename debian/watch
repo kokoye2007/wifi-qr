@@ -1,0 +1,5 @@
+version=4
+opts="pgpmode=gittag,\
+    filenamemangle=s%(?:.*?)?v?(@ANY_VERSION@)\.tar\.gz%@PACKAGE@-$1.tar.gz%" \
+    https://github.com/kokoye2007/@PACKAGE@/tags \
+    (?:.*?/)?v?@ANY_VERSION@@ARCHIVE_EXT@

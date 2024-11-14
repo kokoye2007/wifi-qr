@@ -25,7 +25,7 @@ encode=percent_encode
 
 # Define configuration paths following XDG Base Directory Specification
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-CONFIG_DIR="${CONFIG_HOME}/wifi-qr_webcam"
+CONFIG_DIR="${CONFIG_HOME}/wifi-qr"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 RED=$(tput setaf 1)
@@ -33,7 +33,7 @@ GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
 RESET=$(tput sgr0)
 BOLD=$(tput bold)
-VERSION=0.3
+VERSION="0.3-2"
 
 #RAW DATA SAMPLE
 #"WIFI:S:$SSID;P:$PASSWORD;T:$KEY_TYPE;H:$true;"
@@ -52,7 +52,7 @@ main_menu() {
       "Scan Image and connect" \
       "Share current WiFi" \
       "Share saved WiFi" \
-      "WebCam Configure" \
+      "Webcam Configure" \
       "See license" \
       "See version")
 
@@ -69,7 +69,7 @@ main_menu() {
   elif [[ "$CHOICE" =~ "Scan Image and connect" ]]; then
     call_file_select_and_scan_gui
 
-  elif [[ "$CHOICE" =~ "WebCam Configure" ]]; then
+  elif [[ "$CHOICE" =~ "Webcam Configure" ]]; then
     get_webcam_devices
     main_menu
 
@@ -310,7 +310,7 @@ call_wifi_scan() {
   mode=$1
   wifiqrdata=''
   # tmp data-matrix holder
-  cwd="/tmp/"
+  cwd="/tmp"
   qr_data="$cwd/wifi-qr-scan"
 
   if [[ $mode == "cam" ]]; then
@@ -509,7 +509,7 @@ scan_connect_hidden() {
 
 usage() {
   echo ""
-  echo " Usage: $0 [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q]  [-L] [-v] [-h]"
+  echo " Usage: $0 [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q] [-L] [-v] [-w] [-h]"
   echo ""
   echo " -g	 Launch GUI Main Menu"
   echo " -c	 Launch WiFi QR Create GUI"
@@ -521,6 +521,7 @@ usage() {
   echo " -q	 Launch QR Scan and Connect WiFi GUI"
   echo " -L      Use legacy (backlash) encoding/decoding" 
   echo " -v	 Show WiFi-QR Version $VERSION"
+  echo " -w	 Launch WiFi QR Wecam Selector"
   echo " -h	 Show this help message"
   echo ""
   show_current_password
@@ -814,7 +815,7 @@ while getopts ":gctszf:pqLvwh" opt; do
       ;;
     v)
       echo -e "${GREEN}============================${RESET}"
-      echo -e "${BOLD}${WHITE}	WiFI-QR $VERSION ${RESET}"
+      echo -e "${BOLD}${WHITE}	WiFi-QR $VERSION ${RESET}"
       echo -e "${GREEN}============================${RESET}"
       ;;
     w)

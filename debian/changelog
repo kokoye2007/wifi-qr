@@ -1,3 +1,12 @@
+wifi-qr (0.3-2) unstable; urgency=medium
+
+  * Applied ShellCheck recommendations for improved script quality.
+  * Improved keyboard navigation support (Bug #27).
+  * Added QR scanning functionality with webcam support (Bug #25).
+  * Update outdated documentation on NetworkManager keyfiles (Closes: Ubuntu #2019939).
+
+ -- kokoye2007 <kokoye2007@gmail.com>  Thu, 14 Nov 2024 12:45:04 +1100
+
 wifi-qr (0.3-1) unstable; urgency=medium
 
   * New upstream release (0.3).

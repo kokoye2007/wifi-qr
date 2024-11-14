@@ -1,2 +1,0 @@
-tar-ignore = ".git/*"
-extend-diff-ignore = "(^|/)(README\.md|readme\.md|readme)$"

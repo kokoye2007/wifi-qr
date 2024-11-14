@@ -9,7 +9,7 @@ Icon=wifi-qr.svg
 Keywords=qr;wifi;password;share;
 Terminal=false
 Categories=Utility;Accessibility;
-Actions=ScanQR;ScanFileQR;CreateQR;
+Actions=ScanQR;ScanFileQR;CreateQR;WebcamConfig;
 
 [Desktop Action ScanQR]
 Name=Scan WiFi QR Code
@@ -26,7 +26,7 @@ Name=Create WiFi QR Code
 Exec=sh -c 'wifi-qr -c'
 Terminal=false
 
-[Desktop Action WebCamConfig]
+[Desktop Action WebcamConfig]
 Name=Webcam Selector
 Exec=sh -c 'wifi-qr -w'
 Terminal=false

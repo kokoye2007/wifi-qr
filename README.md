@@ -48,7 +48,7 @@ You can scan and connect using:
     -   `wifi-qr -p` to launch a GUI for scanning a QR from a file and connecting to WiFi.
     -   `wifi-qr -q` to scan and connect to WiFi directly from the GUI.
 
-### Webcam Selector and Config
+### Webcam Selector
 
 Select and configure a webcam for use with WiFi QR operations. This option will allow you to use your webcam to scan WiFi QR codes directly.
 
@@ -121,7 +121,7 @@ bash reading replace with nmcli
 - [x] QR Generate with Terminal 
 - [x] QR Scan and Auto Connect
 - [x] QR Image File Scan and Auto Connect
-- [x] It's Not Wifi QR
+- [x] It's Not WiFi QR
 - [x] This network is not available. 
 - [x] Migration to nmcli
 - [x] QR Share Hidden Network
@@ -129,9 +129,9 @@ bash reading replace with nmcli
 - [x] icons
 - [x] Password with special characters needs to be unquoted
 - [x] Scan from Image File
-- [x] QRdata
+- [x] QR-data
 - [x] WPA3-PSK
-- [x] WebCam Selector 
+- [x] Webcam Selector
 - [ ] Additional LDAP Login
 
 ###  Improve
