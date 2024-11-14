@@ -74,14 +74,18 @@ You can scan and connect using:
 
 [@iandall](https://github.com/iandall "Ian Dall") - qrdata and WPA3-PSK
 
-[@arnelap](https://github.com/arnelap "Arne Lap") - Better keyboard support Feedback
+[@arnelap](https://github.com/arnelap "Arne Lap") - Better keyboard support
+
+[@Thatoo](https://github.com/Thatoo) - QR scan with webcam
+
 
 > [!NOTE]
 > Sorry for Code Clean, Rebase and force upload.
 
 ## Experimental
 
-- [#27](/../../issues/27) Better keyboard support Feedback
+- [#27](/../../issues/27) Better keyboard support
+- [#25](/../../issues/25) QR scan with webcam
 
 ## v0-3-1 
   
