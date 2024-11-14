@@ -21,40 +21,20 @@
 ## Screenshot
 
 
-<table style="width: 100%; border-collapse: collapse;">
-  <tr>
-    <td style="width: 33.33%; text-align: center;">
-      <img src="screenshots/01_shortcut.png" alt="Shortcut" style="max-width: 300px;">
-      <p>Shortcut</p>
-    </td>
-    <td style="width: 33.33%; text-align: center;">
-      <img src="screenshots/02_main_menu.png" alt="Main Menu" style="max-width: 300px;">
-      <p>Main Menu</p>
-    </td>
-    <td style="width: 33.33%; text-align: center;">
-      <img src="screenshots/03_share_ssid.png" alt="Share SSID" style="max-width: 300px;">
-      <p>Share SSID</p>
-    </td>
-  </tr>
-  <tr>
-    <td style="width: 33.33%; text-align: center;">
-      <img src="screenshots/webcam_selector.png" alt="Webcam Selector" style="max-width: 300px;">
-      <p>Webcam Selector</p>
-    </td>
-    <td style="width: 33.33%; text-align: center;">
-      <img src="screenshots/main_menu.png" alt="Main Menu" style="max-width: 300px;">
-      <p>Main Menu</p>
-    </td>
-    <td style="width: 33.33%; text-align: center;">
-      <img src="screenshots/webcam_selected.png" alt="Webcam Selected" style="max-width: 300px;">
-      <p>Webcam Selected</p>
-    </td>
-  </tr>
-  <tr>
-      <img src="screenshots/terminal_menu.png" alt="Terminal Menu" style="max-width: 300px;">
-      <p>Terminal Menu</p>
-  </tr>
-</table>
+## Screenshot
+
+
+| Shortcut | Main Menu | Share SSID |
+|----------|-----------|------------|
+| ![](screenshots/01_shortcut.png) | ![](screenshots/02_main_menu.png) | ![](screenshots/03_share_ssid.png) |
+
+| Main Menu | Webcam Selector | Webcam Selected |
+|-----------|---------------|-----------------|
+| ![](screenshots/main_menu.png) | ![](screenshots/webcam_selector.png) | ![](screenshots/webcam_selected.png) |
+
+| Terminal Menu |
+|-----------------|
+| ![](screenshots/terminal_menu.png) |
 
 
 ## Usage
@@ -137,7 +117,7 @@ Select and configure a webcam for use with WiFi QR operations. This option will 
 > [!NOTE]
 > Sorry for Code Clean, Rebase and force upload.
 
-## Experimental
+## Experimental (v0.3-2)
 
 - [#27](/../../issues/27) Better keyboard support
 - [#25](/../../issues/25) QR scan with webcam
