@@ -15,37 +15,51 @@
  
  Android can easily generate WiFi QR, iOS via Shortcuts apps.
 
+
 ## Usage
 
 ### Generate WIFI QR
+
 It's easy to generate QR codes for WiFi networks by checking `/etc/NetworkManager/system-connections` to generate WPA, WEP, Open, and even HIDDEN networks using `nmcli`.
 
 You can generate QR codes using:
-- Command line:
-  * `wifi-qr -t` to launch WiFi QR creation from the terminal.
-  * `wifi-qr -c` to launch WiFi QR creation using a GUI.
-  * `wifi-qr -z` to use the terminal with a fuzzy finder for network selection.
 
-- Graphical interface:
-  * `wifi-qr -g` to launch the main menu GUI for various operations including QR generation.
+-   Command line:
+    
+    -   `wifi-qr -t` to launch WiFi QR creation from the terminal.
+    -   `wifi-qr -c` to launch WiFi QR creation using a GUI.
+    -   `wifi-qr -z` to use the terminal with a fuzzy finder for network selection.
+-   Graphical interface:
+    
+    -   `wifi-qr -g` to launch the main menu GUI for various operations including QR generation.
 
 ### Scan and Connect with QR Code
+
 Functioning like an Android QR scanner, this allows scanning and automatically connecting to networks. iOS users can see the password but need to manually connect.
 
 You can scan and connect using:
-- Command line:
-  * `wifi-qr -s` for scanning a QR and auto-connecting to WiFi.
-  * `wifi-qr -f [file]` to scan a QR from a file and auto-connect to WiFi.
 
-- Graphical interface:
-  * `wifi-qr -p` to launch a GUI for scanning a QR from a file and connecting to WiFi.
-  * `wifi-qr -q` to scan and connect to WiFi directly from the GUI.
+-   Command line:
+    
+    -   `wifi-qr -s` for scanning a QR and auto-connecting to WiFi.
+    -   `wifi-qr -f [file]` to scan a QR from a file and auto-connect to WiFi.
+-   Graphical interface:
+    
+    -   `wifi-qr -p` to launch a GUI for scanning a QR from a file and connecting to WiFi.
+    -   `wifi-qr -q` to scan and connect to WiFi directly from the GUI.
+
+### Webcam Selector and Config
+
+Select and configure a webcam for use with WiFi QR operations. This option will allow you to use your webcam to scan WiFi QR codes directly.
+
+-   Command line:
+    -   `wifi-qr -w` to select and configure your webcam for scanning QR codes.
 
 ### Additional Commands
-- `wifi-qr -L` Use legacy (backslash) encoding/decoding.
-- `wifi-qr -v` Display the version of WiFi-QR (Version 0.3).
-- `wifi-qr -h` Show the help message.
 
+-   `wifi-qr -L` Use legacy (backslash) encoding/decoding.
+-   `wifi-qr -v` Display the version of WiFi-QR (Version 0.3).
+-   `wifi-qr -h` Show the help message.
 
 
 ## Contributor
