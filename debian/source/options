@@ -1,2 +1,3 @@
-tar-ignore = ".git/*"
-extend-diff-ignore = "(^|/)(README\.md|readme\.md|readme|Makefile|\.gitignore|mentors\.debian\.net\.sh)$"
+tar-ignore = ".git/*|screenshots/*"
+extend-diff-ignore = "(^|/)(README\.md|readme\.md|readme|Makefile|\.gitignore|screenshots/)"
+

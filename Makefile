@@ -1,5 +1,16 @@
 # Makefile for Building, Managing, and Releasing wifi-qr Package
 
+# Define the installation directories
+PREFIX ?= /usr/local
+BINDIR = $(PREFIX)/bin
+APPDIR = $(PREFIX)/share/applications
+ICONDIR = $(PREFIX)/share/icons
+
+# Files to install
+BIN_FILES = wifi-qr
+DESKTOP_FILES = wifi-qr.desktop
+ICON_FILES = wifi-qr.svg
+
 # Variables
 SOFTWARE := wifi-qr
 VERSION := 0.3-2
@@ -15,14 +26,28 @@ DEB_FILE := $(SOFTWARE)_$(VERSION)_all.deb
 NOTES := "Wifi-QR update Debian Package"
 
 # Targets
-.PHONY: all release-tag build-orig build-changes git-init git-tag git-tag-upload uscan-watch checksum checksum-deb clean debug gbp deb dput
+.PHONY: all install uninstall release-tag build-orig build-changes git-init git-tag git-tag-upload uscan-watch checksum checksum-deb clean debug gbp deb dput
 
-# Default target to build everything
-all: debug
+# Default target
+all: install
 
 # Release Tag
 release-tag: git-tag git-archive checksum git-tag-upload
 
+# Installation rule
+install:
+	# Install binary file
+	install -Dm755 $(BIN_FILES) $(DESTDIR)$(BINDIR)/$(BIN_FILES)
+	# Install desktop entry
+	install -Dm644 $(DESKTOP_FILES) $(DESTDIR)$(APPDIR)/$(DESKTOP_FILES)
+	# Install icon file
+	install -Dm644 $(ICON_FILES) $(DESTDIR)$(ICONDIR)/$(ICON_FILES)
+
+# Uninstallation rule
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/$(BIN_FILES)
+	rm -f $(DESTDIR)$(APPDIR)/$(DESKTOP_FILES)
+	rm -f $(DESTDIR)$(ICONDIR)/$(ICON_FILES)
 
 # Target to clean up previous build and create a new Debian orig file
 build-orig:

@@ -1,5 +1,7 @@
 
-  ## WiFi Share and Connect with QR
+# <img src="wifi-qr.svg" width="25" alt="WiFi-QR Logo"> WiFi-QR 
+
+## WiFi Share and Connect with QR
 
  Xiaomi Android phones has started using QR to use WiFi for sharing.
  
@@ -16,11 +18,50 @@
  Android can easily generate WiFi QR, iOS via Shortcuts apps.
 
 
+## Screenshot
+
+
+<table style="width: 100%; border-collapse: collapse;">
+  <tr>
+    <td style="width: 33.33%; text-align: center;">
+      <img src="screenshots/01_shortcut.png" alt="Shortcut" style="max-width: 300px;">
+      <p>Shortcut</p>
+    </td>
+    <td style="width: 33.33%; text-align: center;">
+      <img src="screenshots/02_main_menu.png" alt="Main Menu" style="max-width: 300px;">
+      <p>Main Menu</p>
+    </td>
+    <td style="width: 33.33%; text-align: center;">
+      <img src="screenshots/03_share_ssid.png" alt="Share SSID" style="max-width: 300px;">
+      <p>Share SSID</p>
+    </td>
+  </tr>
+  <tr>
+    <td style="width: 33.33%; text-align: center;">
+      <img src="screenshots/webcam_selector.png" alt="Webcam Selector" style="max-width: 300px;">
+      <p>Webcam Selector</p>
+    </td>
+    <td style="width: 33.33%; text-align: center;">
+      <img src="screenshots/main_menu.png" alt="Main Menu" style="max-width: 300px;">
+      <p>Main Menu</p>
+    </td>
+    <td style="width: 33.33%; text-align: center;">
+      <img src="screenshots/webcam_selected.png" alt="Webcam Selected" style="max-width: 300px;">
+      <p>Webcam Selected</p>
+    </td>
+  </tr>
+  <tr>
+      <img src="screenshots/terminal_menu.png" alt="Terminal Menu" style="max-width: 300px;">
+      <p>Terminal Menu</p>
+  </tr>
+</table>
+
+
 ## Usage
 
 ### Generate WIFI QR
 
-It's easy to generate QR codes for WiFi networks by checking `/etc/NetworkManager/system-connections` to generate WPA, WEP, Open, and even HIDDEN networks using `nmcli`.
+It's easy to generate QR codes for WiFi networks by check and generate WPA, WEP, Open, and even HIDDEN networks using `nmcli`.
 
 You can generate QR codes using:
 
