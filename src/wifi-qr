@@ -557,8 +557,19 @@ check_existing_config() {
     check_v4l2
     if [ -f "${CONFIG_FILE}" ]; then
         local current_device
-        current_device=$(grep "qrwebcam=" "${CONFIG_FILE}" | cut -d= -f2) || true
-        current_device_name=$(grep "qrcamname=" "${CONFIG_FILE}" | cut -d= -f2) || true
+        local current_device_name
+
+        if ! current_device=$(grep "qrwebcam=" "${CONFIG_FILE}" | cut -d= -f2); then
+            echo "Failed to read webcam device from config" >&2
+            get_webcam_devices
+            return
+        fi
+
+        if ! current_device_name=$(grep "qrcamname=" "${CONFIG_FILE}" | cut -d= -f2); then
+            echo "Failed to read webcam name from config" >&2
+            get_webcam_devices
+            return
+        fi
 
         if [ -n "$current_device" ]; then
             if [ -e "$current_device" ] && v4l2-ctl --device "$current_device" --all &>/dev/null; then
@@ -705,21 +716,28 @@ get_webcam_devices() {
 save_config() {
     local device=$2
     local name=$1
-    # Create config directory if it doesn't exist
-    mkdir -p "${CONFIG_DIR}"
 
-    # Save with restrictive permissions
-    (
-    echo "qrwebcam=$device"
-    echo "qrcamname=$name"
-    )> "${CONFIG_FILE}"
-    chmod 600 "${CONFIG_FILE}"
+    if ! mkdir -p "${CONFIG_DIR}"; then
+        echo "Failed to create config directory" >&2
+        exit 1
+    fi
+    if ! (
+        echo "qrwebcam=$device"
+        echo "qrcamname=$name"
+    )> "${CONFIG_FILE}"; then
+        echo "Failed to write config file" >&2
+        exit 1
+    fi
+    if ! chmod 600 "${CONFIG_FILE}"; then
+        echo "Failed to set config file permissions" >&2
+        exit 1
+    fi
 
     if command -v zenity &> /dev/null; then
         zenity --info \
             --icon="webcamoid" \
-            --title="Save Webcam $name" \
-            --text="Selected webcam: $name - $device"
+            --title="$name" \
+            --text="Selected Webcam: $name - $device"
     else
         echo "Selected webcam: $name - $device"
     fi
