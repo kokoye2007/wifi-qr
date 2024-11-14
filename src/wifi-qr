@@ -538,30 +538,27 @@ check_file() {
   fi
 }
 
-# Check if v4l2-ctl is installed
-check_v4l2() {
-    if ! command -v v4l2-ctl &> /dev/null; then
-        if command -v zenity &> /dev/null; then
-            zenity --error \
-                --title="v4l2-ctl Not Found" \
-                --text="The v4l2-ctl utility is required but not installed.\n\nPlease install the v4l-utils package using your package manager:\n\nsudo apt install v4l-utils"
-        else
-            echo "Error: v4l2-ctl is not installed. Please install the v4l-utils package." >&2
-        fi
-        exit 1
-    fi
-}
 
 # Check if device in config exists and is available
 check_existing_config() {
-    check_v4l2
     if [ -f "${CONFIG_FILE}" ]; then
         local current_device
-        current_device=$(grep "qrwebcam=" "${CONFIG_FILE}" | cut -d= -f2) || true
-        current_device_name=$(grep "qrcamname=" "${CONFIG_FILE}" | cut -d= -f2) || true
+        local current_device_name
+
+        if ! current_device=$(grep "qrwebcam=" "${CONFIG_FILE}" | cut -d= -f2); then
+            echo "Failed to read webcam device from config" >&2
+            get_webcam_devices
+            return
+        fi
+
+        if ! current_device_name=$(grep "qrcamname=" "${CONFIG_FILE}" | cut -d= -f2); then
+            echo "Failed to read webcam name from config" >&2
+            get_webcam_devices
+            return
+        fi
 
         if [ -n "$current_device" ]; then
-            if [ -e "$current_device" ] && v4l2-ctl --device "$current_device" --all &>/dev/null; then
+            if [ -e "$current_device" ] && [ -r "$current_device" ]; then
                 echo "Configured webcam device is available: $current_device"
                 zbarwebcam=$current_device
                 return 0
@@ -570,7 +567,7 @@ check_existing_config() {
             # Device not available - ask user what to do
             if command -v zenity &> /dev/null; then
                 local action
-                action=$(zenity --list \
+                if ! action=$(zenity --list \
                     --title="Webcam Device Not Available" \
                     --text="The configured webcam '$current_device_name' is not available." \
                     --column="Action" \
@@ -578,6 +575,10 @@ check_existing_config() {
                     "Remove configuration" \
                     --width=400 \
                     --height=280)
+                then
+                    echo "Dialog cancelled" >&2
+                    exit 1
+                fi
 
                 case "$action" in
                     "Select new webcam device")
@@ -626,12 +627,50 @@ check_existing_config() {
     fi
 }
 
-# Get webcam devices and create formatted list
+# Get webcam devices using sysfs
 get_webcam_devices() {
-    local devices
-    devices=$(v4l2-ctl --list-devices 2>/dev/null | grep -A1 ":$" | grep "/dev/video" | sed 's/\t//g') || true
+    local device_list=()
+    local seen_names=()
 
-    if [ -z "$devices" ]; then
+    # Scan video devices in sysfs (even numbers only)
+    for sysdev in /sys/class/video4linux/video[02468]; do
+        if [ -d "$sysdev" ] && [ -f "$sysdev/name" ]; then
+            local id
+            local dev
+            local name
+
+            if ! id=$(basename "$sysdev"); then
+                echo "Failed to get device ID for $sysdev" >&2
+                continue
+            fi
+
+            dev="/dev/$id"
+
+            # Check if device exists and is readable
+            if [ -c "$dev" ] && [ -r "$dev" ]; then
+                if ! name=$(cat "$sysdev/name"); then
+                    echo "Failed to read name for $sysdev" >&2
+                    continue
+                fi
+
+                # Check if we've seen this camera name before
+                local duplicate=0
+                for seen in "${seen_names[@]}"; do
+                    if [ "$seen" = "$name" ]; then
+                        duplicate=1
+                        break
+                    fi
+                done
+
+                if [ $duplicate -eq 0 ]; then
+                    seen_names+=("$name")
+                    device_list+=("$id" "$name" "$dev")
+                fi
+            fi
+        fi
+    done
+
+    if [ ${#device_list[@]} -eq 0 ]; then
         if command -v zenity &> /dev/null; then
             zenity --error \
                 --title="No Webcam Found" \
@@ -642,25 +681,10 @@ get_webcam_devices() {
         exit 1
     fi
 
-    # Create array to store device info
-    declare -a device_list
-
-    # Process each device
-    while read -r dev; do
-        if [ -n "$dev" ]; then
-            local id name
-            id=$(basename "$dev")
-            name=$(v4l2-ctl --device "$dev" --all 2>/dev/null | grep "Card type" | cut -d: -f2 | sed 's/^ *//')
-            if [ -n "$name" ]; then
-                device_list+=("$id" "$name" "$dev")
-            fi
-        fi
-    done <<< "$devices"
-
     # Present device selection dialog if zenity is available
     if command -v zenity &> /dev/null; then
         local selected
-        selected=$(zenity --list \
+        if ! selected=$(zenity --list \
             --title="Select Webcam Device" \
             --column="ID" \
             --column="Name" \
@@ -669,15 +693,22 @@ get_webcam_devices() {
             --print-column=2,3 \
             --width=500 \
             --height=300)
-
-        if [ -n "$selected" ]; then
-            name="$(echo "$selected" | cut -d'|' -f1)"
-            device="$(echo "$selected" | cut -d'|' -f2)"
-            save_config "$name" "$device"
-        else
+        then
             echo "No device selected" >&2
             exit 1
         fi
+
+        local name
+        local device
+        if ! name=$(echo "$selected" | cut -d'|' -f1); then
+            echo "Failed to parse device name" >&2
+            exit 1
+        fi
+        if ! device=$(echo "$selected" | cut -d'|' -f2); then
+            echo "Failed to parse device path" >&2
+            exit 1
+        fi
+        save_config "$name" "$device"
     else
         # Fallback to command line interface
         echo "Available webcam devices:"
@@ -700,26 +731,31 @@ get_webcam_devices() {
     fi
 }
 
-
 # Save configuration
 save_config() {
     local device=$2
     local name=$1
-    # Create config directory if it doesn't exist
-    mkdir -p "${CONFIG_DIR}"
-
-    # Save with restrictive permissions
-    (
-    echo "qrwebcam=$device"
-    echo "qrcamname=$name"
-    )> "${CONFIG_FILE}"
-    chmod 600 "${CONFIG_FILE}"
+    if ! mkdir -p "${CONFIG_DIR}"; then
+        echo "Failed to create config directory" >&2
+        exit 1
+    fi
+    if ! (
+        echo "qrwebcam=$device"
+        echo "qrcamname=$name"
+    )> "${CONFIG_FILE}"; then
+        echo "Failed to write config file" >&2
+        exit 1
+    fi
+    if ! chmod 600 "${CONFIG_FILE}"; then
+        echo "Failed to set config file permissions" >&2
+        exit 1
+    fi
 
     if command -v zenity &> /dev/null; then
         zenity --info \
             --icon="webcamoid" \
-            --title="Save Webcam $name" \
-            --text="Selected webcam: $name - $device"
+            --title="$name" \
+            --text="Selected Webcam: $name - $device"
     else
         echo "Selected webcam: $name - $device"
     fi
