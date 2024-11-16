@@ -18,8 +18,6 @@
  Android can easily generate WiFi QR, iOS via Shortcuts apps.
 
 
-## Screenshot
-
 
 ## Screenshot
 
@@ -30,7 +28,7 @@
 
 | Main Menu | Webcam Selector | Webcam Selected |
 |-----------|---------------|-----------------|
-| ![](screenshots/main_menu.png) | ![](screenshots/webcam_selector.png) | ![](screenshots/webcam_selected.png) |
+| ![](screenshots/main.png) | ![](screenshots/webcam_selector.png) | ![](screenshots/webcam_selected.png) |
 
 | Terminal Menu |
 |-----------------|
@@ -121,6 +119,9 @@ Select and configure a webcam for use with WiFi QR operations. This option will 
 
 - [#27](/../../issues/27) Better keyboard support
 - [#25](/../../issues/25) QR scan with webcam
+- Applied ShellCheck recommendations for improved script quality.
+- Fix outdated NetworkManager keyfile docs; migrate to nmcli. (LP: #2019939)
+- Adds metainfo.xml file for AppStream integration.
 
 ## v0-3-1 
   

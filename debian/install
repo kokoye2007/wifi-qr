@@ -1,3 +1,4 @@
 wifi-qr usr/bin
 wifi-qr.desktop usr/share/applications
 wifi-qr.svg usr/share/icons
+wifi-qr.metainfo.xml usr/share/metainfo/

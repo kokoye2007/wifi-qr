@@ -211,7 +211,7 @@ call_wifi_pass() {
   KEEY=$(nmcli -g 802-11-wireless-security.psk  -s connection show "${WIFIS}")
   PSK=$(nmcli -g 802-11-wireless-security.key-mgmt  connection show "${WIFIS}" )
   HIDN=$(nmcli -g 802-11-wireless.hidden connection show "${WIFIS}")
-  
+
   if [[ "$PSK" == "sae" ]]; then
     PSSK="T:WPA;R:1"
   elif [[ "$PSK" == *"wpa"* ]]; then
@@ -290,7 +290,7 @@ urimap_str(){
   read -ra elements <<< "$string"
 
   IFS=$' \t\n'
-  
+
   for element in "${elements[@]}"; do
     value=${element#*:}
     if [[ $LEGACY_MODE ]]; then
@@ -337,12 +337,11 @@ call_wifi_scan() {
     # Capture the output of urimap_str in a variable first
     local urimap_result
     urimap_result=$(urimap_str "${wifiqrdata:5:-1}")
-    
+
     # Then use eval with the variable, avoiding SC2046 warning
     eval urimap="(${urimap_result})"
 
     # eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
-
 
     local k v
     for k in "${!urimap[@]}"; do
@@ -519,7 +518,7 @@ usage() {
   echo " -f file Terminal [file] QR Scan and Auto Connect WiFi from file"
   echo " -p 	 Launch GUI [file] QR Scan and Auto Connect WiFi from file"
   echo " -q	 Launch QR Scan and Connect WiFi GUI"
-  echo " -L      Use legacy (backlash) encoding/decoding" 
+  echo " -L      Use legacy (backlash) encoding/decoding"
   echo " -v	 Show WiFi-QR Version $VERSION"
   echo " -w	 Launch WiFi QR Wecam Selector"
   echo " -h	 Show this help message"
@@ -765,7 +764,6 @@ save_config() {
     else
         echo "Selected webcam: $name - $device"
     fi
-
 }
 
 
