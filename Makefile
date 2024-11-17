@@ -23,19 +23,19 @@ CHECKSUM_FILE_MD5 := CHECKSUMS.md5
 CHANGES := $(SOFTFILE)_source.changes
 UPSTREAM_PACKAGE := $(SOFTWARE)_$(VERSION).orig.tar.xz
 DEB_FILE := $(SOFTWARE)_$(VERSION)_all.deb
-NOTES := "Wifi-QR update Debian Package"
+NOTES := "WiFi-QR update Debian Package"
 
 # Targets
-.PHONY: all install uninstall release-tag build-orig build-changes git-init git-tag git-tag-upload uscan-watch checksum checksum-deb clean debug gbp deb dput
+.PHONY: all test-install test-uninstall release-tag build-orig build-changes git-init git-tag git-tag-upload uscan-watch checksum checksum-deb clean debug gbp deb dput
 
 # Default target
-all: install
+all: debug
 
 # Release Tag
 release-tag: git-tag git-archive checksum git-tag-upload
 
 # Installation rule
-install:
+test-install:
 	# Install binary file
 	install -Dm755 $(BIN_FILES) $(DESTDIR)$(BINDIR)/$(BIN_FILES)
 	# Install desktop entry
@@ -44,7 +44,7 @@ install:
 	install -Dm644 $(ICON_FILES) $(DESTDIR)$(ICONDIR)/$(ICON_FILES)
 
 # Uninstallation rule
-uninstall:
+test-uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/$(BIN_FILES)
 	rm -f $(DESTDIR)$(APPDIR)/$(DESKTOP_FILES)
 	rm -f $(DESTDIR)$(ICONDIR)/$(ICON_FILES)
@@ -166,4 +166,3 @@ dput:
 	@echo "Uploading package to mentors..."
 	dput -f mentors ../$(CHANGES)
 	@echo "Package uploaded to mentors."
-
