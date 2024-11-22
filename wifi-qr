@@ -142,12 +142,12 @@ call_wifi_terminal() {
   IFS=$OLD_IFS
   echo ""
   echo -e "${BLUE}===============================================================${RESET}"
-  echo -e "${BOLD}${WHITE}please choose WiFi ssid ${RESET}"
+  echo -e "${BOLD}${WHITE}Please choose WiFi ssid ${RESET}"
   echo -e "${BLUE}===============================================================${RESET}"
   read -e -r wifissid
   WIFIS="${array[$wifissid]}"
   echo -e "${BLUE}===============================================================${RESET}"
-  echo -e "\nYou choose SSID File is: $WIFIS\n ${RESET}"
+  echo -e "\nYour choosen SSID File is: $WIFIS\n ${RESET}"
   echo -e "${BLUE}===============================================================${RESET}"
   terminal_qr
 }
@@ -168,7 +168,7 @@ call_wifi_terminal_fzf() {
   WIFIS="$wifissid"
 
   echo -e "${BLUE}===============================================================${RESET}"
-  echo -e "\nYou choose SSID File is: $WIFIS\n ${RESET}"
+  echo -e "\nYour choosen SSID File is: $WIFIS\n ${RESET}"
   echo -e "${BLUE}===============================================================${RESET}"
   terminal_qr
 }
@@ -183,7 +183,7 @@ terminal_qr() {
 current_wifi_ssid() {
   WIFIS="$(nmcli -t -f active,ssid dev wifi | grep -E '^yes' | cut -d':' -f2- | tr -d '\r\n')"
   echo -e "${BLUE}===============================================================${RESET}"
-  echo -e "\nYou current active SSID is:${BOLD}${RED} $WIFIS\n ${RESET}"
+  echo -e "\nYour current active SSID is:${BOLD}${RED} $WIFIS\n ${RESET}"
   echo -e "${BLUE}===============================================================${RESET}"
 }
 
@@ -275,7 +275,7 @@ urimap_str(){
 
   # Percent encoding is specified by the WiFi Alliance [1], but backslash
   # escapes might occur in legacy environments.  Legacy encoding is
-  # documented in [2] but we can't unambiguously distinguish between
+  # documented in [2] but we cannot unambiguously distinguish between
   # them so we depend on LEGACY_MODE global parameter.
 
   if [[ $LEGACY_MODE ]]; then
@@ -324,7 +324,7 @@ call_wifi_scan() {
 
   if [[ $wifiqrdata != WIFI:*\; ]]; then
     echo -e "${RED}============================${RESET}"
-    echo -e "${BOLD}${WHITE}It's not WiFi QR ${RESET}"
+    echo -e "${BOLD}${WHITE}It is not a WiFi QR code ${RESET}"
     echo -e "${RED}============================${RESET}"
     echo -e "${BLUE}============================${RESET}"
     echo -e "${BOLD}${BLUE} $wifiqrdata ${RESET}"
@@ -377,7 +377,7 @@ call_wifi_scan() {
 
     if [[ "$QHIDE" == "true" ]]; then
       echo -e "${GREEN}============================${RESET}"
-      echo -e "${BOLD}${WHITE}It's is HIDDEN ${RESET}"
+      echo -e "${BOLD}${WHITE}It is HIDDEN ${RESET}"
       echo -e "${GREEN}============================${RESET}"
 
     elif nmcli device wifi list | grep -w "$QSSID"; then
@@ -388,7 +388,7 @@ call_wifi_scan() {
 
     else
       echo -e "${RED}============================${RESET}"
-      echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
+      echo -e "${BOLD}${WHITE}Cannot find $QSSID ${RESET}"
       echo -e "${RED}============================${RESET}"
       QSSIDO=OFF
     fi
@@ -426,7 +426,7 @@ call_wifi_scan_terminal() {
      elif [[ "$QSSIDO" == "ON" ]]; then
 	scan_connect
      else
-	echo "Can't find Network and Can't Connect"
+	echo "Cannot find Network and cannot Connect"
 	exit 0
      fi
 }
@@ -444,7 +444,7 @@ call_wifi_scan_gui() {
     fi
   elif [[ "$QSSIDO" =~ "OFF" ]]; then
     CHOICE=$(zenity --list \
-      --title="Can't find WiFi" \
+      --title="Cannot find WiFi" \
       --text="Choose:" \
       --width=400 --height=180 \
       --column="Check" --column="Option" \
@@ -458,7 +458,7 @@ call_wifi_scan_gui() {
       scan_connect
       if [[ $connectn != 0 ]]; then
         echo -e "${RED}============================${RESET}"
-        echo -e "${BOLD}${WHITE}Can't find $QSSID ${RESET}"
+        echo -e "${BOLD}${WHITE}Cannot find $QSSID ${RESET}"
         echo -e "${RED}============================${RESET}"
         exit
       fi
@@ -573,7 +573,7 @@ check_existing_config() {
             if command -v zenity &> /dev/null; then
                 local action
                 if ! action=$(zenity --list \
-                    --title="Webcam Device Not Available" \
+                    --title="Webcam device not available" \
                     --text="The configured webcam '$current_device_name' is not available." \
                     --column="Action" \
                     "Select new webcam device" \
