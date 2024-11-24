@@ -111,6 +111,8 @@ Select and configure a webcam for use with WiFi QR operations. This option will 
 
 [@Thatoo](https://github.com/Thatoo) - QR scan with webcam
 
+[@jabertwo](https://github.com/jabertwo) - Fix english language
+
 
 > [!NOTE]
 > Sorry for Code Clean, Rebase and force upload.
