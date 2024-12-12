@@ -22,6 +22,7 @@ QHIDE=false
 QTRANS=''
 LEGACY_MODE=''
 encode=percent_encode
+W_TEXT_LINE="------------------------------------------------------"
 
 # Define configuration paths following XDG Base Directory Specification
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -40,80 +41,203 @@ VERSION="0.3-2"
 #qrencode -o - -t UTF8
 #qrencode -l h -s 14 -o
 
-#GUI Mainmenu
+# Display info message
+w_info()
+{
+    printf '%s\n%b\n%s\n' "${W_TEXT_LINE}" "${@}" "${W_TEXT_LINE}" >&2
+
+    case ${WIFIQR_GUI} in
+        # zenity) ${WIFIQR_GUI} --info --width=400 --title="WiFi-QR" --text="$(echo "$@" | sed 's,\\\\,\\\\\\\\,g')";;
+        zenity) ${WIFIQR_GUI} --info --width=400 --title="WiFi-QR" --text="${*//\\/\\\\}";;
+        kdialog) ${WIFIQR_GUI} --title "WiFi-QR" --msgbox "$@";;
+        none) ;;
+    esac
+}
+
+# Display warning message to stderr
+w_warn()
+{
+    printf '%s\nwarning: %b\n%s\n' "${W_TEXT_LINE}" "${*}" "${W_TEXT_LINE}" >&2
+
+    case ${WIFIQR_GUI} in
+        # zenity) ${WIFIQR_GUI} --warning --width=400 --title="WiFi-QR" --text="$(echo "$@" | sed 's,\\\\,\\\\\\\\,g')";;
+        zenity) ${WIFIQR_GUI} --warning --width=400 --title="WiFi-QR" --text="${*//\\/\\\\}";;
+        kdialog) ${WIFIQR_GUI} --title "WiFi-QR" --sorry "$@";;
+        none) ;;
+    esac
+
+    unset _W_timeout
+}
+
+# Display warning message with cancel option
+w_warn_cancel()
+{
+    printf '%s\n%b\n%s\n' "${W_TEXT_LINE}" "${@}" "${W_TEXT_LINE}" >&2
+
+    case ${WIFIQR_GUI} in
+        # zenity) ${WIFIQR_GUI} --warning --title="WiFi-QR" --text="$(echo "$@" | sed 's,\\\\,\\\\\\\\,g')";;
+        zenity) ${WIFIQR_GUI} --warning --width=400 --title="WiFi-QR" --text="${*//\\/\\\\}";;
+        kdialog) ${WIFIQR_GUI} --title "WiFi-QR" --warningcontinuecancel "$@" ;;
+        none) ;;
+    esac
+}
+
+# Display fatal error message and terminate script
+w_die()
+{
+    printf '%s\nerror: %b\n%s\n' "${W_TEXT_LINE}" "${@}" "${W_TEXT_LINE}" >&2
+
+    case ${WIFIQR_GUI} in
+        # zenity) ${WIFIQR_GUI} --error --width=400 --title="WiFi-QR" --text="$(echo "$@" | sed 's,\\\\,\\\\\\\\,g')";;
+        zenity) ${WIFIQR_GUI} --error --width=400 --title="WiFi-QR" --text="${*//\\/\\\\}";;
+        kdialog) ${WIFIQR_GUI} --title "WiFi-QR" --error "$@";;
+        none) ;;
+    esac
+
+    exit 1
+}
+
+# GUI Main Menu
 main_menu() {
+    [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
 
-  CHOICE=$(zenity --list \
-    --title="WiFi and QR Code" \
-    --text="Choose:" \
-    --width=320 --height=360 \
-    --column="Menu:" \
-      "Scan and connect" \
-      "Scan Image and connect" \
-      "Share current WiFi" \
-      "Share saved WiFi" \
-      "Webcam Configure" \
-      "See license" \
-      "See version")
+    case "${WIFIQR_GUI}" in
+        zenity)
+            CHOICE=$(zenity --list \
+                --title="WiFi and QR Code" \
+                --text="Choose:" \
+                --width=320 --height=360 \
+                --column="Menu:" \
+                  "Scan and connect" \
+                  "Scan Image and connect" \
+                  "Share current WiFi" \
+                  "Share saved WiFi" \
+                  "Webcam Configure" \
+                  "See license" \
+                  "See version")
+            ;;
+        kdialog)
+            CHOICE=$(kdialog --menu "WiFi and QR Code" \
+                1 "Scan and connect" \
+                2 "Scan Image and connect" \
+                3 "Share current WiFi" \
+                4 "Share saved WiFi" \
+                5 "Webcam Configure" \
+                6 "See license" \
+                7 "See version")
+            # Convert kdialog numeric selection to text
+            case "$CHOICE" in
+                1) CHOICE="Scan and connect" ;;
+                2) CHOICE="Scan Image and connect" ;;
+                3) CHOICE="Share current WiFi" ;;
+                4) CHOICE="Share saved WiFi" ;;
+                5) CHOICE="Webcam Configure" ;;
+                6) CHOICE="See license" ;;
+                7) CHOICE="See version" ;;
+                *) exit 0 ;;
+            esac
+            ;;
+        *)
+            w_die "Unsupported GUI: ${WIFIQR_GUI}"
+            ;;
+    esac
 
-  #Menu Select
-  if [[ "$CHOICE" =~ "Share saved WiFi" ]]; then
-    call_wifi_gui
+    # Menu Selection
+    if [[ "$CHOICE" =~ "Share saved WiFi" ]]; then
+        call_wifi_gui
 
-  elif [[ "$CHOICE" =~ "Share current WiFi" ]]; then
-    call_current_wifi_gui
+    elif [[ "$CHOICE" =~ "Share current WiFi" ]]; then
+        call_current_wifi_gui
 
-  elif [[ "$CHOICE" =~ "Scan and connect" ]]; then
-    call_wifi_scan_gui "cam"
+    elif [[ "$CHOICE" =~ "Scan and connect" ]]; then
+        call_wifi_scan_gui "cam"
 
-  elif [[ "$CHOICE" =~ "Scan Image and connect" ]]; then
-    call_file_select_and_scan_gui
+    elif [[ "$CHOICE" =~ "Scan Image and connect" ]]; then
+        call_file_select_and_scan_gui
 
-  elif [[ "$CHOICE" =~ "Webcam Configure" ]]; then
-    get_webcam_devices
-    main_menu
+    elif [[ "$CHOICE" =~ "Webcam Configure" ]]; then
+        get_webcam_devices
+        main_menu
 
-  elif [[ "$CHOICE" =~ "See license" ]]; then
-    zenity --text-info --title="WiFi QR Copyright" --filename=/usr/share/doc/wifi-qr/copyright --width=528 --height=780
-    main_menu
+    elif [[ "$CHOICE" =~ "See license" ]]; then
+        case "${WIFIQR_GUI}" in
+            zenity)
+                zenity --text-info --title="WiFi QR Copyright" --filename=/usr/share/doc/wifi-qr/copyright --width=528 --height=780
+                ;;
+            kdialog)
+                kdialog --textbox /usr/share/doc/wifi-qr/copyright 528 780
+                ;;
+        esac
+        main_menu
 
-  elif [[ "$CHOICE" =~ "See version" ]]; then
-    zenity --info --icon=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
-    main_menu
-  else
-	exit 0
-  fi
+    elif [[ "$CHOICE" =~ "See version" ]]; then
+        case "${WIFIQR_GUI}" in
+            zenity)
+                zenity --info --icon=wifi-qr --title="WiFi QR Version" --no-wrap --text=" This is wifi-qr version $VERSION"
+                ;;
+            kdialog)
+                kdialog --title "WiFi QR Version" --msgbox "This is wifi-qr version $VERSION"
+                ;;
+        esac
+        main_menu
+
+    else
+        exit 0
+    fi
 }
 
 wifilist_call(){
   mapfile -t wifilist < <(nmcli  -g NAME,TYPE connection | grep 802-11-wireless | sed 's/:802-11-wireless//' | sed 's/\\\([\\;,:"\]\)/\1/g' )
 }
 
-#GUI
+# GUI
 call_wifi_gui() {
-  wifilist_call
-  WIFIS=$(zenity --list --column="SSID" \
-	  --width=300 --height=600 \
-	  --title="Select SSID" \
-	  "${wifilist[@]}")
+    wifilist_call
 
-  if [ -z "$WIFIS" ]; then
-    exit 0
-  else
-    call_qr_gui
-  fi
+    [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
+
+    case "${WIFIQR_GUI}" in
+        zenity)
+          WIFIS=$(zenity --list --column="SSID" \
+    	          --width=300 --height=600 \
+    	          --title="Select SSID" \
+    	          "${wifilist[@]}")
+          ;;
+        kdialog)
+          WIFIS=$(kdialog --menu "Select SSID" \
+                "${wifilist[@]}")
+          ;;
+        *)
+            w_die "Unsupported GUI: ${WIFIQR_GUI}"
+          ;;
+    esac
+    if [ -z "$WIFIS" ]; then
+      exit 0
+    else
+      call_qr_gui
+    fi
 }
 
+# Call QR GUI
 call_qr_gui() {
   call_wifi_pass
   QR_FILE_NAME="wifi-qr-$(echo "$WIFIS" | tr -dc '[:alnum:]').png"
   SAVE_QR_DIR="${HOME}/Pictures/"
-  QR_PNG="$(zenity --file-selection --save --file-filter="PNG files | *.png" --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
+
+  [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
+
+  case "${WIFIQR_GUI}" in
+      zenity)
+        QR_PNG="$(zenity --file-selection --save --file-filter="PNG files | *.png" --filename="$SAVE_QR_DIR"/"$QR_FILE_NAME")"
+        ;;
+      kdialog)
+        QR_PNG=$(kdialog --getsavefilename "$SAVE_QR_DIR"/"$QR_FILE_NAME" "*.png")
+        ;;
+  esac
   if [[ -z "$QR_PNG" ]]; then
 	  main_menu
   else
     qrencode -l h -s 14 -o "$QR_PNG" "WIFI:S:$SSID;P:$KEEY;${PSSK:+$PSSK;}${H:+$H;};"
-
     xdg-open "$QR_PNG"
   fi
 }
@@ -431,28 +555,63 @@ call_wifi_scan_terminal() {
      fi
 }
 
+# Sample for SSID selection
 call_wifi_scan_gui() {
+  [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
+
   call_wifi_scan "$1"
+
   # Function with QR data
   if [[ "$QSSIDO" =~ "ON" ]]; then
-    zenity --question --title="Connect to WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
+    case "${WIFIQR_GUI}" in
+      zenity)
+        zenity --question --title="Connect to WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
+        ;;
+      kdialog)
+        kdialog --yesno "Connect to '$QSSID'?" --title="Connect to WiFi" --icon=network-wireless
+        ;;
+      *)
+        w_die "Unsupported GUI: ${WIFIQR_GUI}"
+        ;;
+    esac
     connectn=$?
-    if [ $connectn == 0 ]; then \
+    
+    if [ $connectn == 0 ]; then 
       scan_connect
     else
       exit
     fi
+
   elif [[ "$QSSIDO" =~ "OFF" ]]; then
-    CHOICE=$(zenity --list \
-      --title="Cannot find WiFi" \
-      --text="Choose:" \
-      --width=400 --height=180 \
-      --column="Check" --column="Option" \
-      --icon=network-wireless-offline \
-      "Retry scanning internally" \
-      "Retry submitting another QR Code" )
+    case "${WIFIQR_GUI}" in
+      zenity)
+        CHOICE=$(zenity --list \
+          --title="Cannot find WiFi" \
+          --text="Choose:" \
+          --width=400 --height=180 \
+          --column="Check" --column="Option" \
+          --icon=network-wireless-offline \
+          "Retry scanning internally" \
+          "Retry submitting another QR Code")
+        ;;
+      kdialog)
+        CHOICE=$(kdialog --menu "Cannot find WiFi" \
+          1 "Retry scanning internally" \
+          2 "Retry submitting another QR Code")
+        # Translate numeric selection back to text
+        case "$CHOICE" in
+          1) CHOICE="Retry scanning internally" ;;
+          2) CHOICE="Retry submitting another QR Code" ;;
+          *) exit ;;
+        esac
+        ;;
+      *)
+        w_die "Unsupported GUI: ${WIFIQR_GUI}"
+        ;;
+    esac
+
     if [[ "$CHOICE" =~ "Retry scanning internally" ]]; then
-      echo e "${BOLD}Scanning in progess ... ${RESET}"
+      echo -e "${BOLD}Scanning in progress ... ${RESET}"
       nmcli radio wifi off
       sleep 5
       scan_connect
@@ -471,8 +630,21 @@ call_wifi_scan_gui() {
     else
       exit
     fi
+
   elif [[ "$QHIDE" =~ "true" ]]; then
-    zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
+    case "${WIFIQR_GUI}" in
+      zenity)
+        zenity --question --title="Connect to Hidden WiFi" --text="Connect to '$QSSID'?" --width=200 --height=120 --icon=network-wireless 2>/dev/null
+        ;;
+      kdialog)
+        kdialog --yesno "Connect to '$QSSID'?" --title="Connect to Hidden WiFi" --icon=network-wireless
+        ;;
+      *)
+        w_die "Unsupported GUI: ${WIFIQR_GUI}"
+        ;;
+    esac
+    connectn=$?
+    
     if [ "$connectn" = 0 ]; then
       scan_connect_hidden
     else
@@ -481,12 +653,58 @@ call_wifi_scan_gui() {
   fi
 }
 
+# SSID selection function
+select_ssid() {
+  [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
+
+  case "${WIFIQR_GUI}" in
+    zenity)
+      WIFIS=$(zenity --list --column="SSID" \
+        --width=300 --height=600 \
+        --title="Select SSID" \
+        "${wifilist[@]}")
+      ;;
+    kdialog)
+      # For kdialog, convert array to menu items
+      local kdialog_args=()
+      for ssid in "${wifilist[@]}"; do
+        kdialog_args+=("$ssid" "$ssid")
+      done
+      WIFIS=$(kdialog --menu "Select SSID" "${kdialog_args[@]}")
+      ;;
+    *)
+      w_die "Unsupported GUI: ${WIFIQR_GUI}"
+      ;;
+  esac
+}
+
 call_file_select_and_scan_gui () {
-  img_path=$(zenity --file-selection)
+  [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
+
+  case "${WIFIQR_GUI}" in
+    zenity)
+      img_path=$(zenity --file-selection)
+      ;;
+    kdialog)
+      img_path=$(kdialog --getopenfilename "$HOME" "Image Files (*.png *.jpg *.jpeg *.gif)")
+      ;;
+    *)
+      w_die "Unsupported GUI: ${WIFIQR_GUI}"
+      ;;
+  esac
+
   if [ -z "$img_path" ]; then
-    echo "No file selected"
+    case "${WIFIQR_GUI}" in
+      zenity)
+        zenity --error --text="No file selected"
+        ;;
+      kdialog)
+        kdialog --error "No file selected"
+        ;;
+    esac
     exit
   fi
+
   call_wifi_scan_gui "$img_path"
 }
 
@@ -508,10 +726,11 @@ scan_connect_hidden() {
 
 usage() {
   echo ""
-  echo " Usage: $(basename "$0") [-g] [-c] [-t] [-s] [-z] [-f file] [-p] [-q] [-L] [-v] [-w] [-h]"
+  echo " Usage: $(basename "$0") [-g] [-c] [-d zenity|kdialog] [-t] [-s] [-z] [-f file] [-p] [-q] [-L] [-v] [-w] [-h]"
   echo ""
   echo " -g	 Launch GUI Main Menu"
   echo " -c	 Launch WiFi QR Create GUI"
+  echo " -d  Specify GUI tool (zenity or kdialog)"
   echo " -t	 Launch WiFi QR Create Terminal"
   echo " -z	 Launch WiFi QR Create Terminal Fuzzy Finder"
   echo " -s	 Launch QR Scan and Auto Connect WiFi"
@@ -532,17 +751,105 @@ show_current_password(){
 
 check_file() {
   if [ ! -f "$1" ]; then
-    echo "Error: $1 is not a file."
+    w_die "Error: $1 is not a file."
     exit 1
   fi
 
   file_type=$(file -b --mime-type "$1")
   if [ "$file_type" != "image/png" ] && [ "$file_type" != "image/jpeg" ]; then
-    echo "Error: $1 is not an image file."
+    w_die "Error: $1 is not an image file."
     exit 1
   fi
 }
 
+
+# Check if device in config exists and is available
+# check_existing_config() {
+#     if [ -f "${CONFIG_FILE}" ]; then
+#         local current_device
+#         local current_device_name
+# 
+#         if ! current_device=$(grep "qrwebcam=" "${CONFIG_FILE}" | cut -d= -f2); then
+#             echo "Failed to read webcam device from config" >&2
+#             get_webcam_devices
+#             return
+#         fi
+# 
+#         if ! current_device_name=$(grep "qrcamname=" "${CONFIG_FILE}" | cut -d= -f2); then
+#             echo "Failed to read webcam name from config" >&2
+#             get_webcam_devices
+#             return
+#         fi
+# 
+#         if [ -n "$current_device" ]; then
+#             if [ -e "$current_device" ] && [ -r "$current_device" ]; then
+#                 echo "Configured webcam device is available: $current_device"
+#                 zbarwebcam=$current_device
+#                 return 0
+#             fi
+# 
+#             # Device not available - ask user what to do
+#             if command -v zenity &> /dev/null; then
+#                 local action
+#                 if ! action=$(zenity --list \
+#                     --title="Webcam device not available" \
+#                     --text="The configured webcam '$current_device_name' is not available." \
+#                     --column="Action" \
+#                     "Select new webcam device" \
+#                     "Remove configuration" \
+#                     --width=400 \
+#                     --height=280)
+#                 then
+#                     echo "Dialog cancelled" >&2
+#                     exit 1
+#                 fi
+# 
+#                 case "$action" in
+#                     "Select new webcam device")
+#                         get_webcam_devices
+#                         ;;
+#                     "Remove configuration")
+#                         rm -f "${CONFIG_FILE}"
+#                         echo "Configuration removed"
+#                         ;;
+#                     *)
+#                         echo "No action taken" >&2
+#                         exit 1
+#                         ;;
+#                 esac
+#             else
+#                 # Fallback to command line interface
+#                 echo "The configured webcam device '$current_device_name' is not available."
+#                 echo "Options:"
+#                 echo "1) Select new webcam device"
+#                 echo "2) Remove configuration"
+#                 echo "3) Exit"
+#                 echo -n "Select option (1-3): "
+#                 read -r choice
+# 
+#                 case "$choice" in
+#                     1)
+#                         get_webcam_devices
+#                         ;;
+#                     2)
+#                         rm -f "${CONFIG_FILE}"
+#                         echo "Configuration removed"
+#                         ;;
+#                     *)
+#                         echo "No action taken" >&2
+#                         exit 1
+#                         ;;
+#                 esac
+#             fi
+#         else
+#             echo "Invalid configuration format" >&2
+#             get_webcam_devices
+#         fi
+#     else
+#         echo "No existing configuration found"
+#         unset current_device
+#     fi
+# }
 
 # Check if device in config exists and is available
 check_existing_config() {
@@ -551,39 +858,55 @@ check_existing_config() {
         local current_device_name
 
         if ! current_device=$(grep "qrwebcam=" "${CONFIG_FILE}" | cut -d= -f2); then
-            echo "Failed to read webcam device from config" >&2
+            w_warning "Failed to read webcam device from config."
             get_webcam_devices
             return
         fi
 
         if ! current_device_name=$(grep "qrcamname=" "${CONFIG_FILE}" | cut -d= -f2); then
-            echo "Failed to read webcam name from config" >&2
+            w_warning "Failed to read webcam name from config."
             get_webcam_devices
             return
         fi
 
         if [ -n "$current_device" ]; then
             if [ -e "$current_device" ] && [ -r "$current_device" ]; then
-                echo "Configured webcam device is available: $current_device"
+                w_info "Configured webcam device is available: $current_device"
                 zbarwebcam=$current_device
                 return 0
             fi
 
+            [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
+
             # Device not available - ask user what to do
-            if command -v zenity &> /dev/null; then
+            if command -v "${WIFIQR_GUI}" &>/dev/null; then
                 local action
-                if ! action=$(zenity --list \
-                    --title="Webcam device not available" \
-                    --text="The configured webcam '$current_device_name' is not available." \
-                    --column="Action" \
-                    "Select new webcam device" \
-                    "Remove configuration" \
-                    --width=400 \
-                    --height=280)
-                then
-                    echo "Dialog cancelled" >&2
-                    exit 1
-                fi
+
+                case "${WIFIQR_GUI}" in
+                    zenity)
+                        if ! action=$(zenity --list \
+                            --title="Webcam device not available" \
+                            --text="The configured webcam '$current_device_name' is not available." \
+                            --column="Action" \
+                            "Select new webcam device" \
+                            "Remove configuration" \
+                            --width=400 \
+                            --height=280);
+                        then
+                            w_die "Dialog cancelled."
+                        fi
+                        ;;
+                    kdialog)
+                        if ! action=$(kdialog --combobox "The configured webcam '$current_device_name' is not available.\nSelect an action:" \
+                            "Select new webcam device" "Remove configuration");
+                        then
+                            w_die "Dialog cancelled."
+                        fi
+                        ;;
+                    *)
+                        w_die "Unsupported GUI: ${WIFIQR_GUI}"
+                        ;;
+                esac
 
                 case "$action" in
                     "Select new webcam device")
@@ -591,16 +914,15 @@ check_existing_config() {
                         ;;
                     "Remove configuration")
                         rm -f "${CONFIG_FILE}"
-                        echo "Configuration removed"
+                        w_info "Configuration removed."
                         ;;
                     *)
-                        echo "No action taken" >&2
-                        exit 1
+                        w_die "No valid action selected."
                         ;;
                 esac
             else
                 # Fallback to command line interface
-                echo "The configured webcam device '$current_device_name' is not available."
+                w_warning "The configured webcam device '$current_device_name' is not available."
                 echo "Options:"
                 echo "1) Select new webcam device"
                 echo "2) Remove configuration"
@@ -614,28 +936,133 @@ check_existing_config() {
                         ;;
                     2)
                         rm -f "${CONFIG_FILE}"
-                        echo "Configuration removed"
+                        w_info "Configuration removed."
                         ;;
                     *)
-                        echo "No action taken" >&2
-                        exit 1
+                        w_die "No valid action selected."
                         ;;
                 esac
             fi
         else
-            echo "Invalid configuration format" >&2
+            w_warning "Invalid configuration format."
             get_webcam_devices
         fi
     else
-        echo "No existing configuration found"
+        w_info "No existing configuration found."
         unset current_device
     fi
 }
+
+# # Get webcam devices using sysfs
+# get_webcam_devices() {
+#     local device_list=()
+#     local seen_names=()
+# 
+#     # Scan video devices in sysfs (even numbers only)
+#     for sysdev in /sys/class/video4linux/video[02468]; do
+#         if [ -d "$sysdev" ] && [ -f "$sysdev/name" ]; then
+#             local id
+#             local dev
+#             local name
+# 
+#             if ! id=$(basename "$sysdev"); then
+#                 echo "Failed to get device ID for $sysdev" >&2
+#                 continue
+#             fi
+# 
+#             dev="/dev/$id"
+# 
+#             # Check if device exists and is readable
+#             if [ -c "$dev" ] && [ -r "$dev" ]; then
+#                 if ! name=$(cat "$sysdev/name"); then
+#                     echo "Failed to read name for $sysdev" >&2
+#                     continue
+#                 fi
+# 
+#                 # Check if we've seen this camera name before
+#                 local duplicate=0
+#                 for seen in "${seen_names[@]}"; do
+#                     if [ "$seen" = "$name" ]; then
+#                         duplicate=1
+#                         break
+#                     fi
+#                 done
+# 
+#                 if [ $duplicate -eq 0 ]; then
+#                     seen_names+=("$name")
+#                     device_list+=("$id" "$name" "$dev")
+#                 fi
+#             fi
+#         fi
+#     done
+# 
+#     if [ ${#device_list[@]} -eq 0 ]; then
+#         if command -v zenity &> /dev/null; then
+#             zenity --error \
+#                 --title="No Webcam Found" \
+#                 --text="No webcam devices were detected on the system."
+#         else
+#             echo "Error: No webcam devices detected." >&2
+#         fi
+#         exit 1
+#     fi
+# 
+#     # Present device selection dialog if zenity is available
+#     if command -v zenity &> /dev/null; then
+#         local selected
+#         if ! selected=$(zenity --list \
+#             --title="Select Webcam Device" \
+#             --column="ID" \
+#             --column="Name" \
+#             --column="Device" \
+#             "${device_list[@]}" \
+#             --print-column=2,3 \
+#             --width=500 \
+#             --height=300)
+#         then
+#             echo "No device selected" >&2
+#             exit 1
+#         fi
+# 
+#         local name
+#         local device
+#         if ! name=$(echo "$selected" | cut -d'|' -f1); then
+#             echo "Failed to parse device name" >&2
+#             exit 1
+#         fi
+#         if ! device=$(echo "$selected" | cut -d'|' -f2); then
+#             echo "Failed to parse device path" >&2
+#             exit 1
+#         fi
+#         save_config "$name" "$device"
+#     else
+#         # Fallback to command line interface
+#         echo "Available webcam devices:"
+#         local i=1
+#         for ((idx=0; idx<${#device_list[@]}; idx+=3)); do
+#             echo "$i) ${device_list[$idx+1]} (${device_list[$idx+2]})"
+#             ((i++))
+#         done
+# 
+#         echo -n "Select device number (1-$((i-1))): "
+#         read -r selection
+# 
+#         if [ "$selection" -ge 1 ] && [ "$selection" -lt "$i" ]; then
+#             local idx=$(((selection-1)*3))
+#             save_config "${device_list[$idx+1]}" "${device_list[$idx+2]}"
+#         else
+#             echo "Invalid selection" >&2
+#             exit 1
+#         fi
+#     fi
+# }
 
 # Get webcam devices using sysfs
 get_webcam_devices() {
     local device_list=()
     local seen_names=()
+
+    [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
 
     # Scan video devices in sysfs (even numbers only)
     for sysdev in /sys/class/video4linux/video[02468]; do
@@ -645,7 +1072,7 @@ get_webcam_devices() {
             local name
 
             if ! id=$(basename "$sysdev"); then
-                echo "Failed to get device ID for $sysdev" >&2
+                w_warning "Failed to get device ID for $sysdev."
                 continue
             fi
 
@@ -654,7 +1081,7 @@ get_webcam_devices() {
             # Check if device exists and is readable
             if [ -c "$dev" ] && [ -r "$dev" ]; then
                 if ! name=$(cat "$sysdev/name"); then
-                    echo "Failed to read name for $sysdev" >&2
+                    w_warning "Failed to read name for $sysdev."
                     continue
                 fi
 
@@ -676,50 +1103,71 @@ get_webcam_devices() {
     done
 
     if [ ${#device_list[@]} -eq 0 ]; then
-        if command -v zenity &> /dev/null; then
-            zenity --error \
-                --title="No Webcam Found" \
-                --text="No webcam devices were detected on the system."
+        if command -v "${WIFIQR_GUI}" &> /dev/null; then
+            case "${WIFIQR_GUI}" in
+                zenity)
+                    zenity --error \
+                        --title="No Webcam Found" \
+                        --text="No webcam devices were detected on the system."
+                    ;;
+                kdialog)
+                    kdialog --error "No webcam devices were detected on the system."
+                    ;;
+                *)
+                    w_die "Unsupported GUI: ${WIFIQR_GUI}"
+                    ;;
+            esac
         else
-            echo "Error: No webcam devices detected." >&2
+            w_die "No webcam devices detected."
         fi
         exit 1
     fi
 
-    # Present device selection dialog if zenity is available
-    if command -v zenity &> /dev/null; then
+    # Present device selection dialog if GUI is available
+    if command -v "${WIFIQR_GUI}" &> /dev/null; then
         local selected
-        if ! selected=$(zenity --list \
-            --title="Select Webcam Device" \
-            --column="ID" \
-            --column="Name" \
-            --column="Device" \
-            "${device_list[@]}" \
-            --print-column=2,3 \
-            --width=500 \
-            --height=300)
-        then
-            echo "No device selected" >&2
-            exit 1
-        fi
+        case "${WIFIQR_GUI}" in
+            zenity)
+                if ! selected=$("${WIFIQR_GUI}" --list \
+                    --title="Select Webcam Device" \
+                    --column="ID" \
+                    --column="Name" \
+                    --column="Device" \
+                    "${device_list[@]}" \
+                    --print-column=2,3 \
+                    --width=500 \
+                    --height=300);
+                then
+                    w_die "No device selected."
+                fi
+                ;;
+            kdialog)
+                if ! selected=$("${WIFIQR_GUI}" --radiolist "Select Webcam Device:" "${device_list[@]}" \
+                    --geometry 500x300);
+                then
+                    w_die "No device selected."
+                fi
+                ;;
+            *)
+                w_die "Unsupported GUI: ${WIFIQR_GUI}"
+                ;;
+        esac
 
         local name
         local device
         if ! name=$(echo "$selected" | cut -d'|' -f1); then
-            echo "Failed to parse device name" >&2
-            exit 1
+            w_die "Failed to parse device name."
         fi
         if ! device=$(echo "$selected" | cut -d'|' -f2); then
-            echo "Failed to parse device path" >&2
-            exit 1
+            w_die "Failed to parse device path."
         fi
         save_config "$name" "$device"
     else
         # Fallback to command line interface
-        echo "Available webcam devices:"
+        w_info "Available webcam devices:"
         local i=1
         for ((idx=0; idx<${#device_list[@]}; idx+=3)); do
-            echo "$i) ${device_list[$idx+1]} (${device_list[$idx+2]})"
+            w_info "$i) ${device_list[$idx+1]} (${device_list[$idx+2]})"
             ((i++))
         done
 
@@ -730,111 +1178,177 @@ get_webcam_devices() {
             local idx=$(((selection-1)*3))
             save_config "${device_list[$idx+1]}" "${device_list[$idx+2]}"
         else
-            echo "Invalid selection" >&2
-            exit 1
+            w_die "Invalid selection."
         fi
     fi
 }
 
+# # Save configuration
+# save_config() {
+#     local device=$2
+#     local name=$1
+#     if ! mkdir -p "${CONFIG_DIR}"; then
+#         echo "Failed to create config directory" >&2
+#         exit 1
+#     fi
+#     if ! (
+#         echo "qrwebcam=$device"
+#         echo "qrcamname=$name"
+#     )> "${CONFIG_FILE}"; then
+#         echo "Failed to write config file" >&2
+#         exit 1
+#     fi
+#     if ! chmod 600 "${CONFIG_FILE}"; then
+#         echo "Failed to set config file permissions" >&2
+#         exit 1
+#     fi
+# 
+#     if command -v zenity &> /dev/null; then
+#         zenity --info \
+#             --icon="webcamoid" \
+#             --title="$name" \
+#             --text="Selected Webcam: $name - $device"
+#     else
+#         echo "Selected webcam: $name - $device"
+#     fi
+# }
+
 # Save configuration
 save_config() {
-    local device=$2
-    local name=$1
-    if ! mkdir -p "${CONFIG_DIR}"; then
-        echo "Failed to create config directory" >&2
-        exit 1
-    fi
-    if ! (
-        echo "qrwebcam=$device"
-        echo "qrcamname=$name"
-    )> "${CONFIG_FILE}"; then
-        echo "Failed to write config file" >&2
-        exit 1
-    fi
-    if ! chmod 600 "${CONFIG_FILE}"; then
-        echo "Failed to set config file permissions" >&2
-        exit 1
-    fi
+    local name="$1"
+    local device="$2"
+    
+    [ -z "$WIFIQR_GUI" ] && wifiqr_detect_gui
 
-    if command -v zenity &> /dev/null; then
-        zenity --info \
-            --icon="webcamoid" \
-            --title="$name" \
-            --text="Selected Webcam: $name - $device"
+    if ! mkdir -p "${CONFIG_DIR}"; then
+        w_die "Failed to create configuration directory: ${CONFIG_DIR}."
+    fi
+    
+    if ! {
+        echo "qrwebcam=${device}"
+        echo "qrcamname=${name}"
+    } > "${CONFIG_FILE}"; then
+        w_die "Failed to write configuration to ${CONFIG_FILE}."
+    fi
+    
+    if ! chmod 600 "${CONFIG_FILE}"; then
+        w_die "Failed to set permissions for ${CONFIG_FILE}."
+    fi
+    
+    if command -v "${WIFIQR_GUI}" &> /dev/null; then
+        case "${WIFIQR_GUI}" in
+            zenity)
+                zenity --info \
+                    --title="Webcam Selected" \
+                    --text="Selected Webcam: ${name} (${device})"
+                ;;
+            kdialog)
+                kdialog --msgbox "Selected Webcam: ${name} (${device})"
+                ;;
+            *)
+                w_warning "Unsupported GUI for confirmation: ${WIFIQR_GUI}."
+                ;;
+        esac
     else
-        echo "Selected webcam: $name - $device"
+        w_info "Selected Webcam: ${name} (${device})."
     fi
 }
 
+wifiqr_detect_gui()
+{
+    # If WIFIQR_GUI is already set, skip auto-detection
+    [ -n "$WIFIQR_GUI" ] && return
+
+    # Auto-detect based on desktop environment and available tools
+    if [ "${XDG_CURRENT_DESKTOP}" = "KDE" ] && command -v kdialog &> /dev/null; then
+        WIFIQR_GUI=kdialog
+        WIFIQR_GUI_VERSION="$(kdialog --version)"
+    elif command -v zenity &> /dev/null; then
+        WIFIQR_GUI=zenity
+        WIFIQR_GUI_VERSION="$(zenity --version)"
+    elif command -v kdialog &> /dev/null; then
+        WIFIQR_GUI=kdialog
+        WIFIQR_GUI_VERSION="$(kdialog --version)"
+    else
+        w_die "No supported GUI (zenity or kdialog) found."
+    fi
+
+    # Print GUI version info
+    echo "WiFi QR GUI available, using ${WIFIQR_GUI} ${WIFIQR_GUI_VERSION##kdialog }"
+
+    # Export for use in other scripts/functions
+    export WIFIQR_GUI
+}
 
 if [[ $# -eq 0 ]] || [[ $1 != -* ]]; then
   usage
   exit 0
 fi
 
-while getopts ":gctszf:pqLvwh" opt; do
-  case $opt in
-    L)
-      LEGACY_MODE=t
-      encode=legacy_encode
-      ;;
-    g)
-      echo "Launching GUI Main Menu..."
-      action=main_menu
-      ;;
-    c)
-      echo "Launching WiFi QR Create GUI..."
-      action=call_wifi_gui
-      ;;
-    t)
-      echo "Launching WiFi QR Create Terminal..."
-      action=call_wifi_terminal
-      ;;
-    s)
-      echo "Launching QR Scan and Auto Connect WiFi..."
-      action="call_wifi_scan_terminal cam"
-      ;;
-    z)
-      echo "Launching WiFi QR Create Terminal Fuzzy Finder..."
-      action=call_wifi_terminal_fzf
-      ;;
-    f)
-      check_file "$OPTARG"
-      echo "Launching Terminal [file] QR Scan and Auto Connect WiFi from file: $OPTARG"
-      action="call_wifi_scan_terminal ${OPTARG@Q}"
-      ;;
-    p)
-      echo "Launching GUI [file] QR Scan and Auto Connect WiFi from file"
-      action=call_file_select_and_scan_gui
-      ;;
-    q)
-      echo "Launching QR Scan and Connect WiFi GUI..."
-      action="call_wifi_scan_gui cam"
-      ;;
-    v)
-      echo -e "${GREEN}============================${RESET}"
-      echo -e "${BOLD}${WHITE}	WiFi-QR $VERSION ${RESET}"
-      echo -e "${GREEN}============================${RESET}"
-      ;;
-    w)
-      echo "Select a webcam for the QR code scanner"
-      action=get_webcam_devices
-      ;;
-    h)
-      usage
-      exit 0
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
-      exit 1
-      ;;
-    :)
-      echo "Option -$OPTARG requires an argument." >&2
-      exit 1
-      ;;
-    *)
-      usage
-      exit 0
-  esac
+while getopts ":gcd:tszf:pqLvwh" opt; do
+    case $opt in
+        g)
+            action=main_menu
+            ;;
+        c)
+            echo "Launching WiFi QR Create GUI..."
+            action=call_wifi_gui
+            ;;
+        d)
+            WIFIQR_GUI="$OPTARG"
+            ;;
+        t)
+            echo "Launching WiFi QR Create Terminal..."
+            action=call_wifi_terminal
+            ;;
+        s)
+            echo "Launching QR Scan and Auto Connect WiFi..."
+            action="call_wifi_scan_terminal cam"
+            ;;
+        z)
+            echo "Launching WiFi QR Create Terminal Fuzzy Finder..."
+            action=call_wifi_terminal_fzf
+            ;;
+        f)
+            check_file "$OPTARG"
+            echo "Launching Terminal [file] QR Scan and Auto Connect WiFi from file: $OPTARG"
+            action="call_wifi_scan_terminal ${OPTARG@Q}"
+            ;;
+        p)
+            echo "Launching GUI [file] QR Scan and Auto Connect WiFi from file"
+            action=call_file_select_and_scan_gui
+            ;;
+        q)
+            echo "Launching QR Scan and Connect WiFi GUI..."
+            action="call_wifi_scan_gui cam"
+            ;;
+        L)
+            LEGACY_MODE=t
+            encode=legacy_encode
+            ;;
+        v)
+            echo -e "${GREEN}============================${RESET}"
+            echo -e "${BOLD}${WHITE}  WiFi-QR $VERSION ${RESET}"
+            echo -e "${GREEN}============================${RESET}"
+            ;;
+        w)
+            echo "Select a webcam for the QR code scanner"
+            action=get_webcam_devices
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        \?)
+            # echo "Invalid option: -$OPTARG" >&2
+            w_die "Invalid option: -$OPTARG" >&2
+            ;;
+        :)
+            w_die "Option -$OPTARG requires an argument."
+            ;;
+        *)
+            usage
+            exit 0
+    esac
 done
 eval "$action"

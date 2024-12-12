@@ -13,6 +13,7 @@ files
 # Ignore directories containing package build artifacts
 debian/tmp
 debian/.debhelper
+debian/patches/
 
 # Ignore package source directories
 debian/*/source

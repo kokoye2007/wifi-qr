@@ -11,7 +11,10 @@ Vcs-Browser: https://github.com/kokoye2007/wifi-qr
 
 Package: wifi-qr
 Architecture: all
-Depends: ${misc:Depends}, zenity, qrencode, zbar-tools
+Depends: ${misc:Depends}, 
+         zenity | kdialog, 
+         qrencode, 
+         zbar-tools
 Description: WiFi password share via QR codes
  Shares WiFi SSID and password via a QR code.
  Generate a QR code of a WiFi network with its password.
