@@ -117,6 +117,9 @@ Select and configure a webcam for use with WiFi QR operations. This option will 
 > [!NOTE]
 > Sorry for Code Clean, Rebase and force upload.
 
+> [!TIP]
+> [KDE User](./README.KDE.md)
+
 ## Experimental (v0.3-2)
 
 - [#27](/../../issues/27) Better keyboard support
@@ -157,6 +160,7 @@ bash reading replace with nmcli
 - [x] WPA3-PSK
 - [x] Webcam Selector
 - [ ] Additional LDAP Login
+- [ ] Kdialog with KDE
 
 ###  Improve
   LDAP and LEAP
