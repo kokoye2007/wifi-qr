@@ -27,6 +27,7 @@
     <ul>
       <li>-g: Launch GUI Main Menu</li>
       <li>-c: Launch WiFi QR Create GUI</li>
+      <li>-d: Launch WiFi QR GUI with zenity or kdialog</li>
       <li>-t: Launch WiFi QR Create Terminal</li>
       <li>-z: Launch WiFi QR Create Terminal with Fuzzy Finder</li>
       <li>-s: Launch QR Scan and Auto Connect WiFi</li>
@@ -55,7 +56,7 @@
   </provides>
 
   <releases>
-    <release version="0.3-2" date="2024-11-17">
+    <release version="0.4-1" date="2024-12-15">
       <description>
         <p>New features:</p>
         <ul>
@@ -63,6 +64,7 @@
           <li>Added multi-camera configuration</li>
           <li>Added GUI and terminal file scanning options</li>
           <li>Added legacy encoding/decoding support</li>
+          <li>Added kdialog support</li>
         </ul>
       </description>
     </release>
