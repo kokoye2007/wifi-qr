@@ -2,7 +2,7 @@
 .SH NAME
 wifi-qr \-  WiFi Share and Connect with QR
 .SH SYNOPSIS
-.B wifi-qr [  -g  |  -c  |  -t  |  -s  |  -z  |  -f  <file> |  -p  |  -q  |  -v  |  -L  |  -w  |  -h  ]
+.B wifi-qr [  -g  |  -c  | -d <zenity|kdialog> | -t  |  -s  |  -z  |  -f  <file> |  -p  |  -q  |  -v  |  -L  |  -w  |  -h  ]
 .br
 .SH DESCRIPTION
  WiFi password share via QR codes
@@ -21,10 +21,10 @@ wifi-qr option
 .B -g 	GUI Main Menu 
 .br
 .TP
-.B -L 	LEGACY_MODE encoding
+.B -c 	WiFi QR Create GUI
 .br
 .TP
-.B -c 	WiFi QR Create GUI
+.B -d 	Specify GUI tool (zenity or kdialog)
 .br
 .TP
 .B -t 	WiFi QR Create Terminal
@@ -46,6 +46,9 @@ wifi-qr option
 .br
 .TP
 .B -v 	WiFi-QR Version
+.br
+.TP
+.B -L 	LEGACY_MODE encoding
 .br
 .TP
 .B -w 	Select a webcam for the QR code scanner
