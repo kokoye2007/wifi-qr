@@ -2,77 +2,76 @@
 <component type="desktop-application">
   <id>org.debian.wifi-qr</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <name>WiFi QR</name>
-  <summary>Generate and scan QR codes for WiFi networks with GUI and CLI support</summary>
-  
+  <project_license>GPL-3.0+</project_license>
+  <update_contact>kokoye2007@gmail.com</update_contact>
+  <!-- Copyright 2024 kokoye2007 -->
+  <name>
+    WiFi QR
+  </name>
+  <summary>
+    Generate and scan QR codes for WiFi networks with GUI and CLI support
+  </summary>
+
   <description>
-    <p>
-      WiFi QR is a versatile tool for generating and scanning QR codes for WiFi networks. It offers both GUI and command-line interfaces for maximum flexibility.
-    </p>
-    <p>
-      Key Features:
-    </p>
-    <ul>
-      <li>GUI interface for QR code generation and scanning</li>
-      <li>Command-line interface with multiple options</li>
-      <li>Webcam support for QR code scanning</li>
-      <li>Auto-connect functionality for scanned WiFi networks</li>
-      <li>File-based QR code scanning</li>
-      <li>Fuzzy finder for terminal usage</li>
-      <li>Legacy encoding/decoding support</li>
-    </ul>
-    <p>
-      Command Line Options:
-    </p>
-    <ul>
-      <li>-g: Launch GUI Main Menu</li>
-      <li>-c: Launch WiFi QR Create GUI</li>
-      <li>-t: Launch WiFi QR Create Terminal</li>
-      <li>-z: Launch WiFi QR Create Terminal with Fuzzy Finder</li>
-      <li>-s: Launch QR Scan and Auto Connect WiFi</li>
-      <li>-f: Scan and connect from file in terminal mode</li>
-      <li>-p: Scan and connect from file using GUI</li>
-      <li>-q: Launch QR Scan and Connect WiFi GUI</li>
-      <li>-w: Launch WiFi QR Webcam Selector</li>
-      <li>-L: Use legacy (backslash) encoding/decoding</li>
-    </ul>
+      <p>
+        WiFi QR is a versatile tool for generating and scanning QR codes for WiFi networks. It offers both GUI and command-line interfaces for maximum flexibility.
+      </p>
+      <p>
+        Key features:
+      </p>
+      <ul>
+        <li>GUI interface for QR code generation and scanning</li>
+        <li>Command-line interface with multiple options</li>
+        <li>Webcam support for QR code scanning</li>
+        <li>Auto-connect functionality for scanned WiFi networks</li>
+        <li>File-based QR code scanning</li>
+        <li>Fuzzy finder for terminal usage</li>
+        <li>Legacy encoding and decoding support</li>
+      </ul>
+      <p>
+        Command-line options:
+      </p>
+      <ul>
+        <li>Launch GUI main menu (-g)</li>
+        <li>Launch WiFi QR create GUI (-c)</li>
+        <li>Launch WiFi QR GUI with Zenity or Kdialog (-d)</li>
+        <li>Launch WiFi QR create terminal (-t)</li>
+        <li>Launch WiFi QR create terminal with fuzzy finder (-z)</li>
+        <li>Launch QR scan and auto-connect WiFi (-s)</li>
+        <li>Scan and connect from file in terminal mode (-f)</li>
+        <li>Scan and connect from file using GUI (-p)</li>
+        <li>Launch QR scan and connect WiFi GUI (-q)</li>
+        <li>Launch WiFi QR webcam selector (-w)</li>
+        <li>Use legacy encoding or decoding (-L)</li>
+      </ul>
   </description>
-  
+
   <launchable type="desktop-id">wifi-qr.desktop</launchable>
-  
-  <screenshots>
-    <screenshot type="default">
-      <caption>Main GUI window showing QR code generation</caption>
-      <image>https://raw.githubusercontent.com/kokoye2007/wifi-qr/main/screenshots/main.png</image>
-    </screenshot>
-  </screenshots>
-  
+
   <url type="homepage">https://github.com/kokoye2007/wifi-qr</url>
   <developer_name>kokoye2007</developer_name>
-  
+
   <provides>
     <binary>wifi-qr</binary>
   </provides>
-
   <releases>
-    <release version="0.3-2" date="2024-11-17">
+    <release version="0.4-1" date="2024-12-18">
       <description>
         <p>New features:</p>
         <ul>
           <li>Added webcam selector support</li>
           <li>Added multi-camera configuration</li>
           <li>Added GUI and terminal file scanning options</li>
-          <li>Added legacy encoding/decoding support</li>
+          <li>Added legacy encoding and decoding support</li>
+          <li>Added Kdialog support</li>
         </ul>
       </description>
     </release>
   </releases>
-
   <categories>
     <category>Network</category>
     <category>Utility</category>
   </categories>
-
   <keywords>
     <keyword>wifi</keyword>
     <keyword>qr</keyword>
@@ -81,6 +80,9 @@
     <keyword>scanner</keyword>
     <keyword>webcam</keyword>
   </keywords>
-
   <content_rating type="oars-1.1" />
+  <languages>
+    <lang>en_US</lang>
+    <lang percentage="100">en_US</lang>
+  </languages>
 </component>
