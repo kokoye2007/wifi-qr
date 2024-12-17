@@ -152,7 +152,7 @@ debug:
 # Git-buildpackage for Debian package building
 gbp:
 	@echo "Running Git-buildpackage..."
-	gbp buildpackage --git-tag-only
+	gbp buildpackage --git-tag-only --git-ignore-branch
 	@echo "Git-buildpackage complete."
 
 # Build Debian binary package
