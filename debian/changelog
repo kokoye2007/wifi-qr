@@ -1,11 +1,19 @@
-wifi-qr (0.3-2) unstable; urgency=medium
+wifi-qr (0.4-1) unstable; urgency=medium
 
-  * Applied ShellCheck recommendations for improved script quality.
-  * Improved keyboard navigation support (Bug #27).
-  * Added QR scanning functionality with webcam support (Bug #25).
-  * Fix outdated NetworkManager keyfile docs; migrate to nmcli. (LP: #2019939)
+  * Automatically detect GUI dialog tool (Zenity or KDialog).
+    - Add manual dialog tool selection with -d option.
+  * Improve keyboard navigation support (Bug #27).
+  * Add webcam-based QR scanning functionality (Bug #25).
+  * Enhance QR data parsing.
+    - Add legacy encoding support (Bug #23).
+    - Improve parsing of WIFI URI (Bug #22).
+  * Remove deprecated Zenity code.
+  * Apply ShellCheck recommendations to improve script quality.
+  * Add AppStream metadata for better software center integration.
+  * Update copyright year to 2024.
+  * Extend source ignore patterns to include README and Screenshots.
 
- -- kokoye2007 <kokoye2007@gmail.com>  Sun, 17 Nov 2024 02:20:43 +1100
+ -- kokoye2007 <kokoye2007@gmail.com>  Wed, 18 Dec 2024 02:28:22 +1100
 
 wifi-qr (0.3-1) unstable; urgency=medium
 
