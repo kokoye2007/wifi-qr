@@ -9,12 +9,12 @@
     WiFi QR
   </name>
   <summary>
-    Generate and scan QR codes for WiFi networks with GUI and CLI support
+    Generate and scan QR codes for Wi-Fi networks with GUI and CLI support
   </summary>
 
   <description>
       <p>
-        WiFi QR is a versatile tool for generating and scanning QR codes for WiFi networks. It offers both GUI and command-line interfaces for maximum flexibility.
+        Wi-Fi QR is a versatile tool for generating and scanning QR codes for Wi-Fi networks. It offers both GUI and command-line interfaces for maximum flexibility.
       </p>
       <p>
         Key features:
