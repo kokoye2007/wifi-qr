@@ -10,13 +10,14 @@ ICONDIR = $(PREFIX)/share/icons
 BIN_FILES = wifi-qr
 DESKTOP_FILES = wifi-qr.desktop
 ICON_FILES = wifi-qr.svg
+METAINFO = wifi-qr.metainfo.xml
 
 # Variables
 SOFTWARE := wifi-qr
-VERSION := 0.3-2
+VERSION := 0.4-1
 SOFTFILE := $(SOFTWARE)_$(VERSION)
 SOFTTAG := $(SOFTWARE)-$(VERSION)
-BUILD_DIR := BUILD_DIR_$(SOFTWARE)
+BUILD_DIR := ../BUILD_DIR_$(SOFTWARE)
 ARCHIVE := $(SOFTTAG).tar.gz
 CHECKSUM_FILE_SHA := CHECKSUMS.sha256
 CHECKSUM_FILE_MD5 := CHECKSUMS.md5
@@ -55,8 +56,7 @@ build-orig:
 	rm -rf $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)
 	cp -r ./ $(BUILD_DIR)
-	cd $(BUILD_DIR) && rm -rf .git
-	cd $(BUILD_DIR) && dh_make -s -e kokoye2007 -c gpl3 -p $(SOFTFILE) --createorig -y
+	cd $(BUILD_DIR) && rm -rf .git && dh_make -s -e kokoye2007 -c gpl3 -p $(SOFTFILE) --createorig -y
 	gpg --armor --detach-sign $(SOFTFILE).orig.tar.xz
 	@echo "Original source package created."
 
@@ -152,7 +152,7 @@ debug:
 # Git-buildpackage for Debian package building
 gbp:
 	@echo "Running Git-buildpackage..."
-	gbp buildpackage --git-tag-only
+	gbp buildpackage --git-tag-only --git-ignore-branch
 	@echo "Git-buildpackage complete."
 
 # Build Debian binary package

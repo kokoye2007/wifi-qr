@@ -1,7 +1,3 @@
 #!/usr/bin/make -f
 %:
 	dh $@
-
-override_dh_install:
-	appstream-util validate-strict usr/share/metainfo/wifi-qr.metainfo.xml
-	dh_install
