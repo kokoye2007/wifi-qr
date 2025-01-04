@@ -4,11 +4,14 @@ Release:        1%{?dist}
 Summary:        Wi-Fi password share via QR codes
 License:        GPL-3.0-or-later
 URL:            https://github.com/kokoye2007/wifi-qr
-Source0:        https://github.com/kokoye2007/wifi-qr/archive/v%{version}.tar.gz
+# Source0:        https://github.com/kokoye2007/wifi-qr/archive/v%{version}.tar.gz
+# Use git source instead of tarball
+Source0:        %{url}/archive/refs/heads/master.zip
 
 BuildArch:      noarch
 BuildRequires:  make
 BuildRequires:  appstream
+BuildRequires:  git
 
 # Either zenity or kdialog is required for the UI
 Requires:       (zenity or kdialog)
@@ -23,7 +26,7 @@ For Android, OS version 10 and above is supported.
 For iOS, the Shortcut app supports generating Wi-Fi QR codes.
 
 %prep
-%autosetup
+%autosetup -S git
 
 %build
 # No build required for shell scripts
