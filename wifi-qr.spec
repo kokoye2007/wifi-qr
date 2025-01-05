@@ -41,8 +41,8 @@ install -m 644 wifi-qr.metainfo.xml %{buildroot}%{_metainfodir}/
 install -m 644 wifi-qr.1 %{buildroot}%{_mandir}/
 
 %files
-# %license COPYING
-%doc README.md
+# %license 
+%doc README.md ./debian/copyright
 %{_bindir}/wifi-qr
 %{_datadir}/applications/wifi-qr.desktop
 %{_datadir}/icons/hicolor/scalable/apps/wifi-qr.svg
