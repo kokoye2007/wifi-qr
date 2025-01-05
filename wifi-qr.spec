@@ -4,14 +4,10 @@ Release:        1%{?dist}
 Summary:        Wi-Fi password share via QR codes
 License:        GPL-3.0-or-later
 URL:            https://github.com/kokoye2007/wifi-qr
-Source0:        https://github.com/kokoye2007/wifi-qr/archive/%{branch}/%{name}-%{version}.tar.gz
+Source0:        https://github.com/kokoye2007/wifi-qr/archive/refs/tags/v%{version}.tar.gz
 
-# Define the Git branch to use
-%global branch RPM
- 
 BuildArch:      noarch
 BuildRequires:  appstream
-BuildRequires:  git
 
 # Either zenity or kdialog is required for the UI
 Requires:       (zenity or kdialog)
@@ -28,23 +24,30 @@ For iOS, the Shortcut app supports generating Wi-Fi QR codes.
 %prep
 %setup -q -n %{name}-%{version}
 
+
 %build
 # No build required for shell scripts
 
 %install
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/applications
+mkdir -p %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/
 mkdir -p %{buildroot}%{_metainfodir}
+mkdir -p %{buildroot}%{_mandir}
 install -m 755 wifi-qr %{buildroot}%{_bindir}/
 install -m 644 wifi-qr.desktop %{buildroot}%{_datadir}/applications/
+install -m 644 wifi-qr.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/wifi-qr.svg
 install -m 644 wifi-qr.metainfo.xml %{buildroot}%{_metainfodir}/
+install -m 644 wifi-qr.1 %{buildroot}%{_mandir}/
 
 %files
-%license COPYING
+# %license COPYING
 %doc README.md
 %{_bindir}/wifi-qr
 %{_datadir}/applications/wifi-qr.desktop
+%{_datadir}/icons/hicolor/scalable/apps/wifi-qr.svg
 %{_metainfodir}/wifi-qr.metainfo.xml
+%{_mandir}/wifi-qr.1
 
 %changelog
 * Thu Dec 19 2024 kokoye2007 <kokoye2007@gmail.com> - 0.4-1
