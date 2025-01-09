@@ -1,21 +1,9 @@
 wifi-qr (0.4-1) unstable; urgency=medium
 
   * New upstream release (0.4)
-  * Added keyboard-support
-    - Improve keyboard navigation support (Bug #27)
-    - Remove deprecated Zenity code
-    - Add legacy encoding support (Bug #23)
-    - Improve parsing of WIFI URI (Bug #22)
-    - Apply ShellCheck recommendations to improve script quality
-  * Added webcam-support
-    - Add webcam-based QR scanning functionality (Bug #25)
-  * Added appstream-metadata
-    - Add AppStream metadata for better software center integration
-  * Added kdialog-support
-    - Automatically detect dialog tools (Zenity or KDialog)
-    - Add manual dialog tool selection with -d option
   * Extend debian/source ignore patterns
     - exclude README and Screenshots
+    - exclude wifi-qr.spec
   * Update debian/copyright
     - Bump copyright year to 2024
     - Add wifi-qr.metainfo.xml with CC0-1.0 license
