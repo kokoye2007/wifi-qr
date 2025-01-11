@@ -113,12 +113,34 @@ Select and configure a webcam for use with WiFi QR operations. This option will 
 
 [@jabertwo](https://github.com/jabertwo) - Fix english language
 
+[@lamyergeier](https://github.com/lamyergeier) - Installation on Fedora
 
 > [!NOTE]
 > Sorry for Code Clean, Rebase and force upload.
 
 > [!TIP]
 > [KDE User](./README.KDE.md)
+
+## Installing `wifi-qr` on Fedora via COPR
+
+### Enable the COPR Repository
+To get started, enable the COPR repository:
+
+```bash
+sudo dnf copr enable kokoye2007/wifi-qr
+```
+
+### Install `wifi-qr`
+Once the repository is enabled, install the package:
+
+```bash
+sudo dnf install wifi-qr
+```
+
+## Experimental (v0.4)
+
+- Zenity and Kdialog Option
+- RPM, DEB, TGZ support
 
 ## Experimental (v0.3-2)
 
