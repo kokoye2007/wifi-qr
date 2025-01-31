@@ -61,7 +61,7 @@ build-orig:
 	rm -rf $(BUILD_DIR) ../$(SOFTFILE).orig.tar.xz*
 	mkdir -p $(BUILD_DIR)
 	cp -r ./ $(BUILD_DIR)
-	cd $(BUILD_DIR) && rm -rf .git && dh_make -s -e kokoye2007 -c gpl3 -p $(SOFTFILE) --createorig -y
+	cd $(BUILD_DIR) && rm -rf .git && dh_make -s -e kokoye2007 -c gpl3 -p $(SOFTFILE) --createorig -y || echo "DONE"
 	gpg --armor --detach-sign ../$(SOFTFILE).orig.tar.xz
 	@echo "Original source package created."
 
