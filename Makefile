@@ -91,7 +91,7 @@ git-tag:
 # Archive, sign, and push the tag
 git-archive:
 	@echo "Creating Debian-compliant source archive..."
-	git archive --prefix=$(SOFTTAG)/ -o ../$(ARCHIVE) $(VERSION)
+	git archive --prefix=$(SOFTTAG)/ -o ../$(ARCHIVE) v$(VERSION)
 	gpg --armor --detach-sign ../$(ARCHIVE)
 
 git-tag-upload:
