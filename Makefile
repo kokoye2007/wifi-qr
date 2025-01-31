@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Makefile for Building, Managing, and Releasing wifi-qr Package
 
 # Define the installation directories
@@ -13,17 +15,19 @@ ICON_FILES = wifi-qr.svg
 METAINFO = wifi-qr.metainfo.xml
 
 # Variables
+VERSION := 0.4
+DEBIAN_REVISION := 1
+DEBIAN_VERSION := $(VERSION)-$(DEBIAN_REVISION)
 SOFTWARE := wifi-qr
-VERSION := 0.4-1
 SOFTFILE := $(SOFTWARE)_$(VERSION)
-SOFTTAG := $(SOFTWARE)-$(VERSION)
-BUILD_DIR := ../BUILD_DIR_$(SOFTWARE)
+SOFTTAG := upstream/$(VERSION)  # Debian-style tag
+UPSTREAM_PACKAGE := $(SOFTWARE)_$(VERSION).orig.tar.xz
+DEB_FILE := $(SOFTWARE)_$(DEBIAN_VERSION)_all.deb
 ARCHIVE := $(SOFTTAG).tar.gz
 CHECKSUM_FILE_SHA := CHECKSUMS.sha256
 CHECKSUM_FILE_MD5 := CHECKSUMS.md5
 CHANGES := $(SOFTFILE)_source.changes
-UPSTREAM_PACKAGE := $(SOFTWARE)_$(VERSION).orig.tar.xz
-DEB_FILE := $(SOFTWARE)_$(VERSION)_all.deb
+BUILD_DIR := ../BUILD_DIR_$(SOFTWARE)
 NOTES := "WiFi-QR update Debian Package"
 
 # Targets
@@ -33,7 +37,8 @@ NOTES := "WiFi-QR update Debian Package"
 all: debug
 
 # Release Tag
-release-tag: git-tag git-archive checksum git-tag-upload
+release-tag: git-tag git-archive checksum checksum-deb git-tag-upload
+
 
 # Installation rule
 test-install:
@@ -53,17 +58,17 @@ test-uninstall:
 # Target to clean up previous build and create a new Debian orig file
 build-orig:
 	@echo "Building original source package..."
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) ../$(SOFTFILE).orig.tar.xz*
 	mkdir -p $(BUILD_DIR)
 	cp -r ./ $(BUILD_DIR)
 	cd $(BUILD_DIR) && rm -rf .git && dh_make -s -e kokoye2007 -c gpl3 -p $(SOFTFILE) --createorig -y
-	gpg --armor --detach-sign $(SOFTFILE).orig.tar.xz
+	gpg --armor --detach-sign ../$(SOFTFILE).orig.tar.xz
 	@echo "Original source package created."
 
 # Target to build Debian changes file
 build-changes:
-	@echo "Building Debian changes file..."
-	debuild -S -i -I
+	@echo "Building Debian changes file with correct versioning..."
+	debuild -S -i -I -sa
 	@echo "Changes file created."
 
 # Git repository initialization
@@ -78,32 +83,33 @@ git-init:
 # Create and push a Git tag
 git-tag:
 	@echo "Creating and pushing Git tag..."
-	# git add -A
-	# git commit -s -am "$(SOFTWARE) $(VERSION)"
-	git tag -s $(SOFTTAG) -m "Upstream $(VERSION)"
-	git tag -v $(SOFTTAG) 
-	git push -u origin master
+	git tag -s $(SOFTTAG) -m "Upstream release $(VERSION)"
 	git push origin $(SOFTTAG)
 	@echo "Git tag created and pushed."
 
 # Archive, sign, and push the tag
 git-archive:
-	@echo "Creating release archive and uploading..."
-	git archive --prefix=$(SOFTTAG)/ -o ../$(ARCHIVE) $(SOFTTAG)
-	gpg --armor --detach-sign ../$(ARCHIVE)
+	@echo "Creating Debian-compliant source archive..."
+	git archive --prefix=$(SOFTWARE)-$(VERSION)/ -o ../$(UPSTREAM_PACKAGE) $(SOFTTAG)
+	gpg --armor --detach-sign ../$(UPSTREAM_PACKAGE)
 
 git-tag-upload:
-	@echo "Release archive created and signed."
-	gh release create $(VERSION) \
+	@echo "Uploading release archive, Debian package, and checksums..."
+	gh release create v$(VERSION) \
 		../$(ARCHIVE) \
 		../$(ARCHIVE).asc \
-    ../$(SOFTTAG)_$(CHECKSUM_FILE_SHA) \
-    ../$(SOFTTAG)_$(CHECKSUM_FILE_MD5) \
-    ../$(SOFTTAG)_$(CHECKSUM_FILE_SHA).asc \
-    ../$(SOFTTAG)_$(CHECKSUM_FILE_MD5).asc \
+		../$(SOFTTAG)_$(CHECKSUM_FILE_SHA) \
+		../$(SOFTTAG)_$(CHECKSUM_FILE_MD5) \
+		../$(SOFTTAG)_$(CHECKSUM_FILE_SHA).asc \
+		../$(SOFTTAG)_$(CHECKSUM_FILE_MD5).asc \
+		../$(DEB_FILE) \
+		../$(DEB_FILE)_$(CHECKSUM_FILE_SHA) \
+		../$(DEB_FILE)_$(CHECKSUM_FILE_MD5) \
+		../$(DEB_FILE)_$(CHECKSUM_FILE_SHA).asc \
+		../$(DEB_FILE)_$(CHECKSUM_FILE_MD5).asc \
 		--title "$(SOFTTAG)" \
-		--notes "Release $(SOFTTAG)"
-	@echo "Release archive created and signed."
+		--notes "Release $(SOFTTAG) with Debian package"
+	@echo "GitHub release updated with Debian package and checksums."
 
 # Run uscan to check for new upstream versions
 uscan-watch:
