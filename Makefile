@@ -20,8 +20,8 @@ DEBIAN_REVISION := 1
 DEBIAN_VERSION := $(VERSION)-$(DEBIAN_REVISION)
 SOFTWARE := wifi-qr
 SOFTFILE := $(SOFTWARE)_$(VERSION)
-SOFTTAG := upstream/$(VERSION)  # Debian-style tag
-UPSTREAM_PACKAGE := $(SOFTWARE)_$(VERSION).orig.tar.xz
+SOFTTAG := $(SOFTWARE)-$(VERSION)
+UPSTREAM_PACKAGE := $(SOFTFILE).org.tar.xz
 DEB_FILE := $(SOFTWARE)_$(DEBIAN_VERSION)_all.deb
 ARCHIVE := $(SOFTTAG).tar.gz
 CHECKSUM_FILE_SHA := CHECKSUMS.sha256
@@ -83,15 +83,16 @@ git-init:
 # Create and push a Git tag
 git-tag:
 	@echo "Creating and pushing Git tag..."
-	git tag -s $(SOFTTAG) -m "Upstream release $(VERSION)"
-	git push origin $(SOFTTAG)
+	git tag -s v$(VERSION) -m "Upstream release $(VERSION)"
+	git tag -v v$(VERSION)
+	git push origin v$(VERSION)
 	@echo "Git tag created and pushed."
 
 # Archive, sign, and push the tag
 git-archive:
 	@echo "Creating Debian-compliant source archive..."
-	git archive --prefix=$(SOFTWARE)-$(VERSION)/ -o ../$(UPSTREAM_PACKAGE) $(SOFTTAG)
-	gpg --armor --detach-sign ../$(UPSTREAM_PACKAGE)
+	git archive --prefix=$(SOFTTAG)/ -o ../$(ARCHIVE) $(VERSION)
+	gpg --armor --detach-sign ../$(ARCHIVE)
 
 git-tag-upload:
 	@echo "Uploading release archive, Debian package, and checksums..."
