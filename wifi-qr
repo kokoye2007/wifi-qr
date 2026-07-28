@@ -397,6 +397,16 @@ urimap_parse(){
   local -n __urimap_ref=$1
   local string=$2
 
+  # Percent encoding is specified by the WiFi Alliance [1], but backslash
+  # escapes might occur in legacy environments.  Legacy encoding is
+  # documented in [2] but we cannot unambiguously distinguish between
+  # them so we depend on LEGACY_MODE global parameter.
+
+  if [[ $LEGACY_MODE ]]; then
+    # Replace backslash escaped ";" with \xHH form so it doesn't interfere with \xXX splitting
+    string=$(sed -E 's/(([^\\]|^)(\\\\[^;])*)(\\\\;)/\1\\x3B/g' <<<"$string")
+  fi
+
   local value element key
   local IFS=";"
   read -ra elements <<< "$string"
