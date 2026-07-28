@@ -404,7 +404,7 @@ urimap_parse(){
 
   if [[ $LEGACY_MODE ]]; then
     # Replace backslash escaped ";" with \xHH form so it doesn't interfere with \xXX splitting
-    string=$(sed -E 's/(([^\\]|^)(\\\\[^;])*)(\\\\;)/\1\\x3B/g' <<<"$string")
+    string=$(sed -E 's/(([^\]|^)(\\[^;])*)(\\;)/\1\\x3B/g' <<<"$string")
   fi
 
   local value element key
