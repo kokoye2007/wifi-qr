@@ -392,8 +392,10 @@ call_zbar_img_scan() {
   zbarimg --raw "$img_path" >"$qr_data" 2>/dev/null
 }
 
-urimap_str(){
-  local string=$1
+# Populate an associative array (passed by name) from a Wi-Fi QR payload.
+urimap_parse(){
+  local -n __urimap_ref=$1
+  local string=$2
 
   # Percent encoding is specified by the WiFi Alliance [1], but backslash
   # escapes might occur in legacy environments.  Legacy encoding is
@@ -405,15 +407,13 @@ urimap_str(){
     string=$(sed -E 's/(([^\]|^)(\\[^;])*)(\\;)/\1\\x3B/g' <<<"$string")
   fi
 
-  local value
+  local value element key
   local IFS=";"
-
-  # Use an array to avoid SC2086 issue
   read -ra elements <<< "$string"
-
   IFS=$' \t\n'
 
   for element in "${elements[@]}"; do
+    key=${element%%:*}
     value=${element#*:}
     if [[ $LEGACY_MODE ]]; then
       value=$(sed -E -e ':L;s/\\([\;,":])/\1\n/;tL;s/\n//g' <<<"${value@E}")
@@ -421,10 +421,7 @@ urimap_str(){
       value=${value//%/\\x}
       value=${value@E}
     fi
-
-    # Quote variables as recommended by shellcheck
-    echo "[${element%%:*}]=${value@Q}"
-
+    __urimap_ref["$key"]=$value
   done
 }
 
@@ -456,15 +453,7 @@ call_wifi_scan() {
   else
     declare -A urimap
 
-    # Capture the output of urimap_str in a variable first
-    local urimap_result
-    urimap_result=$(urimap_str "${wifiqrdata:5:-1}")
-
-    # Then use eval with the variable, avoiding SC2046 warning
-    eval urimap="(${urimap_result})"
-
-    # eval urimap=\($(urimap_str "${wifiqrdata:5:-1}")\)
-
+    urimap_parse urimap "${wifiqrdata:5:-1}"
     local k v
     for k in "${!urimap[@]}"; do
       v=${urimap[$k]}
